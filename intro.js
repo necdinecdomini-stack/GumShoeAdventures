@@ -1,4 +1,6 @@
 (function () {
+  try { window.localStorage.clear(); } catch (e) {}
+
   var PAGES = [
     { img: 'comic/page_01.webp' },
     { img: 'comic/page_02.webp' },
