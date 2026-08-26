@@ -1,4 +1,3 @@
-
 :root {
   --navy: #07151b;
   --panel: #0c242b;
@@ -77,6 +76,7 @@ button { font: inherit; }
 .folder-button:hover { border-color: var(--line); background: rgba(110,201,192,.08); }
 .notes-desktop-button { left: 18%; }
 .timeline-desktop-button { left: 30%; }
+.report-desktop-button { left: 42%; }
 .notes-desktop-button > b, .timeline-desktop-button > b { position: absolute; top: .35rem; right: .35rem; display: grid; place-items: center; min-width: 22px; height: 22px; border-radius: 50%; background: #b75548; color: white; font: 800 .65rem "Courier New", monospace; }
 .folder-icon { position: relative; display: inline-block; width: 86px; height: 56px; border: 2px solid #cf9f48; background: #c5923d; box-shadow: inset 0 5px #dfae56, 0 8px 18px rgba(0,0,0,.25); }
 .folder-icon::before { content: ""; position: absolute; left: -2px; top: -14px; width: 40px; height: 14px; border: 2px solid #cf9f48; border-bottom: 0; background: #c5923d; }
@@ -92,6 +92,16 @@ button { font: inherit; }
 .timeline-icon::before { content: ""; position: absolute; left: 19px; top: 8px; bottom: 8px; width: 2px; background: #d3b260; }
 .timeline-icon i { position: absolute; left: 13px; width: 14px; height: 14px; border: 3px solid #d3b260; border-radius: 50%; background: #102e34; }
 .timeline-icon i:nth-child(1) { top: 7px; }.timeline-icon i:nth-child(2) { top: 25px; }.timeline-icon i:nth-child(3) { top: 43px; }
+.report-icon { position: relative; display: inline-block; width: 58px; height: 70px; border: 2px solid #8e846f; background: #e2dcc7; box-shadow: 6px 7px 0 #425b5a, 0 10px 20px rgba(0,0,0,.25); }
+.report-icon::before { content: "R"; position: absolute; top: 7px; right: 7px; display: grid; place-items: center; width: 18px; height: 18px; border: 1px solid #a75448; color: #a75448; font: 900 .7rem "Courier New", monospace; }
+.report-icon::after { content: ""; position: absolute; right: -2px; top: -2px; border-style: solid; border-width: 0 15px 15px 0; border-color: transparent #0d2a31 transparent transparent; }
+.report-icon i { position: absolute; left: 8px; right: 8px; height: 1px; background: #82928c; }
+.report-icon i:nth-child(1) { top: 35px; }.report-icon i:nth-child(2) { top: 46px; }.report-icon i:nth-child(3) { top: 57px; }
+.report-icon-small { width: 24px; height: 29px; border-width: 1px; box-shadow: 2px 2px 0 #526967; }
+.report-icon-small::before { top: 3px; right: 3px; width: 9px; height: 9px; border: 0; font-size: .47rem; }
+.report-icon-small::after { display: none; }
+.report-icon-small i { left: 4px; right: 4px; }
+.report-icon-small i:nth-child(1) { top: 15px; }.report-icon-small i:nth-child(2) { top: 20px; }.report-icon-small i:nth-child(3) { top: 25px; }
 .desktop-status { position: absolute; left: 1rem; right: 1rem; bottom: .8rem; display: flex; justify-content: space-between; color: #64817d; font: .68rem "Courier New", monospace; text-transform: uppercase; }
 
 .file-window { position: absolute; z-index: 4; top: 16%; left: 50%; transform: translateX(-50%); width: min(760px, 88%); min-height: 360px; border: 1px solid #547077; background: #0c2229; box-shadow: 0 30px 80px rgba(0,0,0,.55); }
@@ -109,10 +119,12 @@ button { font: inherit; }
 .paper-file { display: grid; place-items: center; height: 68px; background: var(--paper); color: #374247; font: 800 .8rem "Courier New", monospace; box-shadow: 5px 5px 0 #657373; }
 .paper-file.german-file { background: #d7ccb2; color: #63463b; box-shadow: 5px 5px 0 #795b51; }
 
-.case-reader { height: calc(100% - 48px); display: grid; grid-template-columns: 295px 1fr; }
-.case-sidebar { min-height: 0; display: flex; flex-direction: column; border-right: 1px solid var(--line); background: #091c22; overflow-y: auto; }
-.back-button { border: 0; border-bottom: 1px solid var(--line); background: transparent; color: #87a8a3; padding: 1rem; text-align: left; font: .72rem "Courier New", monospace; cursor: pointer; }
-.back-button:hover { color: white; }
+.case-reader { height: calc(100% - 48px); display: grid; grid-template-columns: 295px 1fr; grid-template-rows: 44px minmax(0,1fr); }
+.case-reader-titlebar { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; padding-left: 1rem; border-bottom: 1px solid #9eaaa6; background: #d8ded9; color: #122128; font: 800 .75rem "Courier New", monospace; }
+.case-reader-titlebar > span { display: flex; align-items: center; gap: .7rem; }
+.case-reader-titlebar > button { align-self: stretch; width: 46px; border: 0; border-left: 1px solid #abb8b5; background: transparent; color: #18282d; font-size: 1.4rem; cursor: pointer; }
+.case-reader-titlebar > button:hover { background: #bf554b; color: white; }
+.case-sidebar { grid-row: 2; min-height: 0; display: flex; flex-direction: column; border-right: 1px solid var(--line); background: #091c22; overflow-y: auto; }
 .case-id-block { padding: 1.2rem 1rem; border-bottom: 1px solid var(--line); }
 .case-id-block span { color: #6f928d; font: .65rem "Courier New", monospace; letter-spacing: .14em; }
 .case-id-block strong { display: block; margin: .25rem 0; color: var(--amber); font: 800 2rem "Courier New", monospace; }
@@ -144,7 +156,7 @@ button { font: inherit; }
 .open-timeline-button .timeline-icon i { left: 3px; width: 7px; height: 7px; border-width: 2px; }
 .open-timeline-button .timeline-icon i:nth-child(1) { top: 2px; }.open-timeline-button .timeline-icon i:nth-child(2) { top: 8px; }.open-timeline-button .timeline-icon i:nth-child(3) { top: 14px; }
 
-.document-view { min-width: 0; min-height: 0; display: grid; grid-template-rows: 40px minmax(0, 1fr); background: #172c31; overflow: hidden; }
+.document-view { grid-row: 2; min-width: 0; min-height: 0; display: grid; grid-template-rows: 40px minmax(0, 1fr); background: #172c31; overflow: hidden; }
 .document-toolbar { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #52666a; background: #cbd3cf; color: #243337; padding: 0 1rem; font: 700 .65rem "Courier New", monospace; letter-spacing: .08em; }
 .document-scroll { min-width: 0; min-height: 0; overflow-y: scroll; overscroll-behavior: contain; scrollbar-gutter: stable; }
 .document-scroll::-webkit-scrollbar { width: 12px; }
@@ -230,6 +242,77 @@ button { font: inherit; }
 .submission-receipt h2 { margin: 1.5rem 0 .65rem; font: 800 2rem/1.1 Georgia, serif; }
 .submission-receipt > p { max-width: 55ch; margin: 0 auto; color: #59686a; font: .95rem/1.55 Georgia, serif; }
 
+.case-report-app { position: absolute; z-index: 40; inset: 48px 0 0; display: grid; grid-template-rows: 54px minmax(0,1fr); background: #091b20; color: #17262a; }
+.case-report-bar { display: flex; align-items: stretch; justify-content: space-between; border-bottom: 1px solid #82918e; background: #d7ddd8; }
+.case-report-bar > div { display: flex; align-items: center; gap: .7rem; padding-left: 1rem; }
+.case-report-bar > div > span { display: grid; gap: .08rem; }
+.case-report-bar b { font: 900 .74rem "Courier New", monospace; letter-spacing: .11em; }
+.case-report-bar small { color: #647572; font: 700 .58rem "Courier New", monospace; letter-spacing: .08em; }
+.case-report-bar > button { width: 54px; border: 0; border-left: 1px solid #abb8b5; background: transparent; color: #18282d; cursor: pointer; font-size: 1.45rem; }
+.case-report-bar > button:hover { background: #b64f47; color: white; }
+.case-report-scroll { min-width: 0; min-height: 0; overflow-y: auto; padding: 1.3rem; background: radial-gradient(circle at 50% 10%, #19353b, #08171b 72%); }
+.case-report-paper { width: min(1040px, 100%); margin: 0 auto 3rem; border: 1px solid #9b988b; background: #e8e4d7; box-shadow: 0 25px 75px rgba(0,0,0,.5); }
+.report-letterhead { border-bottom: 3px double #33494b; padding: clamp(1.2rem, 4vw, 2.4rem); background: linear-gradient(115deg, #ddd8c9, #efecdf); }
+.report-letterhead p { margin: 0 0 .35rem; color: #53706f; font: 900 .66rem "Courier New", monospace; letter-spacing: .16em; }
+.report-letterhead h1 { margin: 0; font: 800 clamp(2rem, 4vw, 3.25rem)/1 Georgia, serif; letter-spacing: -.035em; }
+.report-letterhead > span { display: block; margin-top: .65rem; color: #6b7774; font: .72rem "Courier New", monospace; }
+.dual-label { display: grid; gap: .1rem; }
+.dual-label b { color: #263a3c; font: 800 .72rem/1.25 "Courier New", monospace; letter-spacing: .03em; }
+.dual-label small { color: #6c7976; font: 700 .62rem/1.2 "Courier New", monospace; }
+.report-case-meta { display: grid; grid-template-columns: 1.5fr .75fr 1.5fr .75fr; gap: 1px; border-bottom: 1px solid #999f98; background: #a6aca5; }
+.report-case-meta > label, .report-case-meta > div { display: grid; align-content: center; gap: .45rem; min-width: 0; background: #d9d8cc; padding: .9rem; }
+.report-case-meta input, .report-case-meta select, .responsible-party-field input { width: 100%; min-width: 0; border: 1px solid #899692; background: #f3efe3; color: #17262a; padding: .7rem; font: .82rem Georgia, serif; }
+.report-case-meta strong { color: #244d4c; font: 900 .9rem "Courier New", monospace; }
+.report-section { padding: clamp(1.2rem, 3vw, 2rem); border-bottom: 1px solid #aaa99e; }
+.report-section > header { display: flex; align-items: center; gap: .85rem; margin-bottom: 1rem; }
+.report-section > header > span { display: grid; place-items: center; flex: 0 0 38px; height: 38px; border: 1px solid #315c5c; color: #315c5c; font: 900 .78rem "Courier New", monospace; }
+.report-section > header h2 { margin: 0; font: 800 1.35rem/1 Georgia, serif; }
+.report-section > header p { margin: .25rem 0 0; color: #697875; font: 700 .68rem "Courier New", monospace; }
+.police-conclusion { border-left: 4px solid #3f716e; background: #d6ddd5; padding: 1rem; margin-bottom: 1rem; }
+.police-conclusion p { margin: 0 0 .3rem; font: 800 .95rem/1.45 Georgia, serif; }
+.police-conclusion span { color: #566765; font: .88rem/1.4 Georgia, serif; }
+.report-choice-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .55rem; margin: 0; padding: 0; border: 0; }
+.report-choice-grid legend { grid-column: 1 / -1; margin-bottom: .7rem; }
+.report-choice-grid > label { display: flex; align-items: center; gap: .55rem; border: 1px solid #9da39c; background: #efecdf; padding: .8rem; cursor: pointer; font: 700 .76rem/1.35 Georgia, serif; }
+.report-choice-grid > label:hover, .report-choice-grid > label.selected { border-color: #2d6965; background: #d3e1d9; }
+.report-choice-grid input { accent-color: #256861; }
+.report-instruction { margin: -.25rem 0 1rem 3.3rem; color: #61706d; font: .78rem/1.45 Georgia, serif; }
+.report-evidence-list { display: grid; gap: .9rem; }
+.report-evidence-card { display: grid; grid-template-columns: 42px 1fr; gap: .8rem; border: 1px solid #a7aaa1; background: #dcdacd; padding: .8rem; }
+.report-evidence-number { display: grid; place-items: center; align-self: start; width: 36px; height: 36px; border-radius: 50%; background: #1d4c4c; color: #ecf4ef; font: 900 .76rem "Courier New", monospace; }
+.report-evidence-fields { display: grid; grid-template-columns: 1fr auto 1fr; gap: .7rem; align-items: end; min-width: 0; }
+.report-evidence-fields label { display: grid; gap: .45rem; min-width: 0; }
+.report-evidence-fields textarea { width: 100%; resize: vertical; border: 1px solid #939b96; background: #f4f0e4; color: #18272a; padding: .7rem; font: .9rem/1.45 Georgia, serif; }
+.report-evidence-fields textarea:focus, .report-case-meta input:focus, .report-case-meta select:focus, .responsible-party-field input:focus { outline: 2px solid #397a75; outline-offset: 1px; }
+.insert-source-button { align-self: center; width: 128px; border: 1px solid #49716e; background: #173f45; color: #dcece7; padding: .65rem .5rem; cursor: pointer; font: 800 .56rem/1.35 "Courier New", monospace; }
+.insert-source-button:hover { background: #265a5d; }
+.responsible-party-field { display: grid; gap: .45rem; margin-top: 1rem; }
+.report-submit-footer { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1.3rem clamp(1.2rem, 3vw, 2rem); background: #d2d3c8; }
+.report-submit-footer > div { display: grid; gap: .45rem; }
+.report-submit-footer p { margin: 0; color: #5e6d6b; font: .68rem/1.4 "Courier New", monospace; }
+.report-submit-footer > button { border: 1px solid #244549; background: #123b42; color: #edf7f4; padding: .85rem 1rem; cursor: pointer; font: 900 .68rem/1.35 "Courier New", monospace; letter-spacing: .045em; }
+.report-submit-footer > button:hover { background: #20585a; }
+.report-submit-footer > button small { color: #9fc8c1; font-size: .58rem; }
+.report-submitted-stamp { justify-self: start; border: 2px double #357453; color: #357453; padding: .35rem .5rem; transform: rotate(-1deg); font: 900 .58rem "Courier New", monospace; letter-spacing: .1em; }
+.report-source-shade { position: absolute; z-index: 3; inset: 54px 0 0; display: grid; place-items: center; padding: 1rem; background: rgba(2,10,13,.82); backdrop-filter: blur(4px); }
+.report-source-picker { width: min(720px, 100%); max-height: min(700px, calc(100% - 1rem)); display: grid; grid-template-rows: 48px auto minmax(0,1fr); border: 1px solid #79918e; background: #dfe1d7; box-shadow: 0 25px 70px rgba(0,0,0,.65); }
+.report-source-picker > header { display: flex; justify-content: space-between; align-items: stretch; border-bottom: 1px solid #8d9a96; background: #0b272e; color: #d5ebe6; }
+.report-source-picker > header div { display: grid; align-content: center; gap: .05rem; padding-left: 1rem; }
+.report-source-picker > header b { font: 900 .68rem "Courier New", monospace; letter-spacing: .1em; }
+.report-source-picker > header small { color: #83aaa4; font: .56rem "Courier New", monospace; }
+.report-source-picker > header button { width: 48px; border: 0; border-left: 1px solid #35565a; background: transparent; color: #d5ebe6; cursor: pointer; font-size: 1.35rem; }
+.report-source-picker > header button:hover { background: #b34e46; }
+.report-source-picker > p { margin: 0; border-bottom: 1px solid #afb5af; padding: .85rem 1rem; color: #536462; font: .76rem/1.45 Georgia, serif; }
+.report-source-list { min-height: 0; overflow-y: auto; display: grid; align-content: start; gap: .6rem; padding: .8rem; }
+.report-source-list > button { display: grid; gap: .3rem; border: 1px solid #a0aaa5; background: #efecdf; color: #1b2c2f; padding: .8rem; text-align: left; cursor: pointer; }
+.report-source-list > button:hover { border-color: #2d716c; background: #d5e2da; }
+.report-source-list > button > span { color: #41706c; font: 900 .56rem "Courier New", monospace; letter-spacing: .08em; }
+.report-source-list > button > b { font: 800 .82rem Georgia, serif; }
+.report-source-list > button > p { margin: 0; font: .82rem/1.45 Georgia, serif; }
+.report-source-list > button > small { border-left: 2px solid #6e928d; color: #5b6c69; padding-left: .55rem; font: .72rem/1.4 Georgia, serif; }
+.report-source-list > button > i { justify-self: end; color: #2d6e69; font: 900 .58rem "Courier New", monospace; letter-spacing: .07em; }
+.report-source-empty { padding: 2rem; color: #687875; text-align: center; font: .82rem/1.5 Georgia, serif; }
+
 .selection-tool { position: fixed; z-index: 60; display: flex; max-width: calc(100vw - 24px); border: 1px solid #e3bd6a; background: #091d23; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
 .selection-tool button { border: 0; background: transparent; color: #f2cf7f; padding: .62rem .72rem; cursor: pointer; font: 800 .65rem "Courier New", monospace; letter-spacing: .06em; }
 .selection-tool button:first-child:hover { background: rgba(230,174,79,.15); }
@@ -271,6 +354,10 @@ button { font: inherit; }
 .note-drag-handle:active { cursor: grabbing; }
 .note-drag-handle i { font-size: .95rem; font-style: normal; }
 .note-body { padding: .8rem; }
+.note-origin { display: grid; gap: .22rem; margin: -.1rem 0 .65rem; padding: .45rem .5rem; border: 1px solid rgba(43,71,73,.18); background: rgba(255,255,255,.18); }
+.note-origin > span { color: #777365; font: 900 .5rem "Courier New", monospace; letter-spacing: .1em; }
+.note-origin > b { color: #405f5e; font: 800 .56rem/1.35 "Courier New", monospace; }
+.note-origin .note-source { justify-self: start; font-size: .56rem; line-height: 1.35; }
 .note-body blockquote { max-height: 150px; overflow-y: auto; margin: 0 0 .55rem; color: #293335; font: italic .9rem/1.5 Georgia, serif; }
 .note-source { border: 0; border-bottom: 1px solid rgba(43,71,73,.35); background: transparent; color: #315f61; padding: 0 0 .18rem; cursor: pointer; text-align: left; font: 800 .58rem "Courier New", monospace; }
 .note-source:hover { color: #173d40; border-color: #173d40; }
@@ -312,8 +399,10 @@ button { font: inherit; }
 @media (max-width: 800px) {
   .terminal-page { padding: 0; }
   .terminal-shell { height: 100svh; min-height: 0; border: 0; }
-  .case-reader { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
-  .case-sidebar { max-height: 235px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .case-reader { grid-template-columns: 1fr; grid-template-rows: 44px auto minmax(0,1fr); }
+  .case-reader-titlebar { grid-column: 1; grid-row: 1; }
+  .case-sidebar { grid-row: 2; max-height: 235px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .document-view { grid-row: 3; }
   .case-id-block, .review-meter { display: none; }
   .case-sidebar nav { grid-auto-flow: column; grid-auto-columns: minmax(135px, 1fr); overflow-x: auto; }
   .case-sidebar nav button { grid-template-columns: 22px 1fr; }
@@ -321,6 +410,9 @@ button { font: inherit; }
   .submit-case-button { margin: .1rem .65rem .65rem; }
   .document-page { width: calc(100% - 1rem); margin: .5rem auto 1.5rem; }
   .submit-window fieldset { grid-template-columns: 1fr; }
+  .report-case-meta { grid-template-columns: repeat(2, 1fr); }
+  .report-evidence-fields { grid-template-columns: 1fr; }
+  .insert-source-button { width: 100%; }
   .notes-canvas { display: grid; align-content: start; gap: .8rem; overflow-y: auto; padding: .8rem; }
   .notes-canvas .board-grid { position: fixed; }
   .note-card { position: relative; left: auto !important; top: auto !important; width: 100%; transform: none !important; }
@@ -339,6 +431,7 @@ button { font: inherit; }
   .folder-button { left: 1.2rem; top: 43%; }
   .notes-desktop-button { left: 8.5rem; }
   .timeline-desktop-button { left: 15.8rem; }
+  .report-desktop-button { left: 1.2rem; top: 64%; }
   .file-window { top: 12%; width: calc(100% - 1rem); }
   .case-file { grid-template-columns: 44px 1fr; }
   .case-file > b { display: none; }
@@ -356,6 +449,17 @@ button { font: inherit; }
   .submit-heading span { justify-self: start; }
   .form-actions, .receipt-actions { flex-direction: column-reverse; }
   .primary-action, .secondary-action { width: 100%; }
+  .case-report-scroll { padding: .35rem; }
+  .case-report-paper { margin-bottom: 1rem; }
+  .report-letterhead h1 { font-size: 1.85rem; }
+  .report-case-meta { grid-template-columns: 1fr; }
+  .report-choice-grid { grid-template-columns: 1fr; }
+  .report-instruction { margin-left: 0; }
+  .report-evidence-card { grid-template-columns: 32px 1fr; gap: .45rem; padding: .55rem; }
+  .report-evidence-number { width: 28px; height: 28px; }
+  .report-submit-footer { align-items: stretch; flex-direction: column; }
+  .report-submit-footer > button { width: 100%; }
+  .report-source-shade { padding: .25rem; }
   .notes-board-bar > div:first-child { padding-left: .65rem; }
   .notes-board-bar small { display: none; }
   .add-note-button { padding: 0 .65rem; font-size: .58rem; }

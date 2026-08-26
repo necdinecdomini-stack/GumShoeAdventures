@@ -4,12 +4,43 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="dark" />
-    <title>Sonderermittlungen — Offline-Version</title>
+    <title>Special Investigations — Sonderermittlungen</title>
+    <link rel="icon" href="./favicon.svg" />
+    <link rel="stylesheet" href="./intro.css" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <noscript>Dieses Spiel benötigt JavaScript. Bitte aktiviere JavaScript im Browser.</noscript>
-    <div id="root"></div>
+
+    <!-- ── Comic Intro ── -->
+    <div id="intro">
+
+      <!-- Splash / Language Select -->
+      <div id="splash" class="splash">
+        <div class="splash-title">
+          <span class="eyebrow">Neuheim Special Investigations Division</span>
+          <h1>Special<br>Investigations</h1>
+          <span class="sub">Sonderermittlungen</span>
+        </div>
+        <div class="lang-buttons">
+          <button class="lang-btn" data-lang="en">English</button>
+          <button class="lang-btn" data-lang="de">Deutsch</button>
+        </div>
+      </div>
+
+      <!-- Comic Viewer -->
+      <div id="comic-viewer" class="comic-viewer">
+        <button id="skip-intro-btn" class="skip-intro-btn">Skip Intro</button>
+        <span id="page-counter" class="page-counter"></span>
+        <div class="comic-progress"><div id="comic-progress-fill" class="comic-progress-fill"></div></div>
+        <span id="click-hint" class="click-hint">Click to continue</span>
+      </div>
+
+    </div>
+
+    <!-- ── Game (hidden until intro ends) ── -->
+    <div id="root" style="display:none"></div>
+    <script src="./intro.js"></script>
     <script src="./game.js"></script>
   </body>
 </html>
