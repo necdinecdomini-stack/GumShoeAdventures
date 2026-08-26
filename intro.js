@@ -23,6 +23,7 @@
   var currentPage = -1;
   var transitioning = false;
   var comicStarted = false;
+  var introEnded = false;
   var selectedLang = null;
 
   var intro = document.getElementById('intro');
@@ -119,6 +120,7 @@
   }
 
   function endIntro() {
+    introEnded = true;
     intro.classList.add('fade-out');
     setTimeout(function () {
       intro.style.display = 'none';
@@ -134,7 +136,7 @@
 
   // Keyboard navigation
   document.addEventListener('keydown', function (e) {
-    if (!comicStarted) return;
+    if (!comicStarted || introEnded) return;
     if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
       e.preventDefault();
       nextPage();
