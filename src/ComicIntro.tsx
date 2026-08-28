@@ -7,10 +7,56 @@ const PAGES = Array.from({ length: 18 }, (_, i) => {
   return `./comic/page_${n}.webp`;
 });
 
-type Phase = "splash" | "comic" | "done";
+const AUDIO_FILES = [
+  "./audio/rain-thunder.mp3",
+  "./audio/whistle.mp3",
+  "./audio/footsteps.mp3",
+  "./audio/phone-ring.mp3",
+  "./audio/easy-winners.mp3",
+  "./audio/car-driving.mp3",
+];
+
+const TOTAL_ASSETS = PAGES.length + AUDIO_FILES.length;
+
+type Phase = "loading" | "splash" | "comic" | "done";
+
+function useAssetLoader() {
+  const [loaded, setLoaded] = useState(0);
+  const [ready, setReady] = useState(false);
+  const started = useRef(false);
+
+  useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+
+    let count = 0;
+    const tick = () => {
+      count++;
+      setLoaded(count);
+      if (count >= TOTAL_ASSETS) setReady(true);
+    };
+
+    PAGES.forEach((src) => {
+      const img = new Image();
+      img.onload = tick;
+      img.onerror = tick;
+      img.src = src;
+    });
+
+    AUDIO_FILES.forEach((src) => {
+      fetch(src)
+        .then((r) => r.arrayBuffer())
+        .then(() => tick())
+        .catch(() => tick());
+    });
+  }, []);
+
+  return { loaded, ready, total: TOTAL_ASSETS };
+}
 
 export default function ComicIntro({ onComplete }: { onComplete: () => void }) {
-  const [phase, setPhase] = useState<Phase>("splash");
+  const { loaded, ready, total } = useAssetLoader();
+  const [phase, setPhase] = useState<Phase>("loading");
   const [page, setPage] = useState(0);
   const [fading, setFading] = useState(false);
   const transitioning = useRef(false);
@@ -18,22 +64,20 @@ export default function ComicIntro({ onComplete }: { onComplete: () => void }) {
   const pageSfxHandles = useRef<SfxHandle[]>([]);
   const ragtime = useRef<SfxHandle | null>(null);
 
+  useEffect(() => {
+    if (ready && phase === "loading") {
+      setTimeout(() => setPhase("splash"), 400);
+    }
+  }, [ready, phase]);
+
   const stopPageSfx = () => {
     pageSfxHandles.current.forEach((h) => h.stop());
     pageSfxHandles.current = [];
   };
 
   useEffect(() => {
-    PAGES.forEach((src) => {
-      const img = new Image();
-      img.src = src;
-    });
-  }, []);
-
-  useEffect(() => {
     if (phase !== "comic") return;
 
-    // Stop previous looping SFX unless car continues (pages 11→12→13)
     if (pageSfxHandles.current.length && page !== 11 && page !== 12) {
       stopPageSfx();
     }
@@ -120,6 +164,21 @@ export default function ComicIntro({ onComplete }: { onComplete: () => void }) {
 
   return (
     <div id="intro">
+      {phase === "loading" && (
+        <div className="loading-screen">
+          <div className="loading-badge">S.I.</div>
+          <div className="loading-title">Special Investigations</div>
+          <div className="loading-sub">Loading case files…</div>
+          <div className="loading-bar-track">
+            <div
+              className="loading-bar-fill"
+              style={{ width: `${(loaded / total) * 100}%` }}
+            />
+          </div>
+          <div className="loading-count">{loaded} / {total}</div>
+        </div>
+      )}
+
       {phase === "splash" && (
         <div className={`splash${fading ? " hidden" : ""}`}>
           <div className="splash-title">

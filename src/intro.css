@@ -1,3 +1,73 @@
+/* ── Loading Screen ── */
+
+.loading-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+  background: radial-gradient(ellipse at 50% 40%, #0f2a32 0%, #030c10 70%);
+  animation: loadFadeIn 0.4s ease;
+}
+
+@keyframes loadFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.loading-badge {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #e6ae4f;
+  color: #e6ae4f;
+  font: 900 1.1rem "Courier New", monospace;
+  letter-spacing: 0.08em;
+  animation: badgePulse 1.6s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% { border-color: #e6ae4f; color: #e6ae4f; }
+  50%      { border-color: #f1c774; color: #f1c774; box-shadow: 0 0 18px rgba(230, 174, 79, 0.25); }
+}
+
+.loading-title {
+  color: white;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.loading-sub {
+  color: #6f928d;
+  font: 0.72rem "Courier New", monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.loading-bar-track {
+  width: min(280px, 70vw);
+  height: 3px;
+  background: rgba(119, 200, 192, 0.15);
+  overflow: hidden;
+}
+
+.loading-bar-fill {
+  height: 100%;
+  background: #e6ae4f;
+  transition: width 0.25s ease;
+}
+
+.loading-count {
+  color: rgba(181, 228, 219, 0.35);
+  font: 700 0.58rem "Courier New", monospace;
+  letter-spacing: 0.1em;
+}
+
 /* ── Comic Intro & Splash ── */
 
 #intro {
