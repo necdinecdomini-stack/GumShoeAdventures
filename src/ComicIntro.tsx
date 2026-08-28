@@ -4,7 +4,7 @@ import type { SfxHandle } from "./lib/audio";
 
 const PAGES = Array.from({ length: 18 }, (_, i) => {
   const n = String(i + 1).padStart(2, "0");
-  return `/comic/page_${n}.webp`;
+  return `./comic/page_${n}.webp`;
 });
 
 type Phase = "splash" | "comic" | "done";
@@ -39,18 +39,18 @@ export default function ComicIntro({ onComplete }: { onComplete: () => void }) {
     }
 
     if (page === 2) {
-      playSfxFile("/audio/whistle.mp3");
-      playSfxFile("/audio/footsteps.mp3");
+      playSfxFile("./audio/whistle.mp3");
+      playSfxFile("./audio/footsteps.mp3");
     } else if (page === 6) {
-      playSfxFile("/audio/phone-ring.mp3", true).then((h) => {
+      playSfxFile("./audio/phone-ring.mp3", true).then((h) => {
         pageSfxHandles.current.push(h);
       });
     } else if (page === 10) {
-      playSfxFile("/audio/easy-winners.mp3").then((h) => {
+      playSfxFile("./audio/easy-winners.mp3").then((h) => {
         ragtime.current = h;
       });
     } else if (page === 11) {
-      playSfxFile("/audio/car-driving.mp3", true).then((h) => {
+      playSfxFile("./audio/car-driving.mp3", true).then((h) => {
         pageSfxHandles.current.push(h);
       });
     }
@@ -59,7 +59,7 @@ export default function ComicIntro({ onComplete }: { onComplete: () => void }) {
   const startComic = useCallback(() => {
     initAudio();
     sfxClick();
-    startMusic("/audio/rain-thunder.mp3");
+    startMusic("./audio/rain-thunder.mp3");
     setFading(true);
     setTimeout(() => {
       setPhase("comic");

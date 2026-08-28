@@ -46,7 +46,7 @@ async function loadTrack(path: string): Promise<AudioBuffer | null> {
   }
 }
 
-export async function startMusic(path = "/audio/ambient.mp3") {
+export async function startMusic(path = "./audio/ambient.mp3") {
   if (musicSource && currentTrack === path) return;
   stopMusic();
   const buf = await loadTrack(path);
