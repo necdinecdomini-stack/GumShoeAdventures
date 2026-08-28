@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 
-export type ReportCaseId = "riverside" | "timmy-two-shoes";
+export type ReportCaseId = "timmy-two-shoes";
 export type PoliceDecision = "" | "correct" | "incorrect" | "insufficient";
 export type ResponsibilityType = "" | "person-group" | "accident" | "unknown";
 
@@ -44,21 +44,13 @@ export function createEmptyReport(): CaseReportData {
 }
 
 const caseMeta = {
-  riverside: {
-    code: "81-F",
-    titleEn: "Riverside Community Hall Fire",
-    titleDe: "Brand im Gemeindehaus Riverside",
-    conclusionEn: "Tomas Biro deliberately started the fire.",
-    conclusionDe: "Tomas Biro hat den Brand absichtlich gelegt.",
-    fileName: "Case_81-F_Final_Report.pdf",
-  },
   "timmy-two-shoes": {
-    code: "MPD-2026-1187",
+    code: "NPD-2026-1187",
     titleEn: "The Timmy Two-Shoes Restaurant Fire",
     titleDe: "Der Brand in Timmy Two-Shoes' Restaurant",
-    conclusionEn: "Salvatore DiMarco committed arson and insurance fraud.",
-    conclusionDe: "Salvatore DiMarco beging Brandstiftung und Versicherungsbetrug.",
-    fileName: "MPD-2026-1187_Abschlussbericht.pdf",
+    conclusionEn: "Salvatore Montenegro committed aggravated arson and insurance fraud.",
+    conclusionDe: "Salvatore Montenegro hat schwere Brandstiftung und Versicherungsbetrug begangen.",
+    fileName: "NPD-2026-1187_Abschlussbericht.pdf",
   },
 } satisfies Record<ReportCaseId, Record<string, string>>;
 
@@ -306,7 +298,7 @@ export function CaseReportApp({
           <div className="report-letterhead"><p>RIVERSIDE POLICE DEPARTMENT</p><h1>Special Investigations Division</h1><span>Final investigative assessment / Abschließende Ermittlungsbewertung</span></div>
 
           <section className="report-case-meta">
-            <label><DualLabel en="Case" de="Fall" /><select value={caseId} onChange={(event) => onCaseChange(event.target.value as ReportCaseId)}><option value="riverside">81-F — Riverside Community Hall Fire</option><option value="timmy-two-shoes">MPD-2026-1187 — Timmy Two-Shoes</option></select></label>
+            <label><DualLabel en="Case" de="Fall" /><select value={caseId} onChange={(event) => onCaseChange(event.target.value as ReportCaseId)}><option value="timmy-two-shoes">NPD-2026-1187 — Timmy Two-Shoes</option></select></label>
             <div><DualLabel en="Case number" de="Aktenzeichen" /><strong>{meta.code}</strong></div>
             <label><DualLabel en="Investigator or student" de="Ermittler oder Schüler" /><input value={report.investigator} onChange={(event) => change({ investigator: event.target.value })} required placeholder="Name / Name" /></label>
             <div><DualLabel en="Documents reviewed" de="Gelesene Dokumente" /><strong>{reviewed} / {total}</strong></div>
