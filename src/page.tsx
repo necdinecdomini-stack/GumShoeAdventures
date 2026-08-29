@@ -1,61 +1,23 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
-import { timmyQuestions, timmyReports } from "./timmy-data";
+import { useCallback, useEffect, useState } from "react";
+import { timmyReports } from "./timmy-data";
 import { magyarReports } from "./magyarosaurus-data";
 import { magyarReportsDe } from "./magyarosaurus-data-de";
 import { CaseReportApp, ReportIcon, createEmptyReport } from "./case-report";
-import type { CaseReportData, ReportCaseId, ReportSource } from "./case-report";
+import type { CaseReportData, ReportSource } from "./case-report";
 import ComicIntro from "./ComicIntro";
 import CityMap from "./CityMap";
 import type { LocationId } from "./CityMap";
 import SuspectsBoard, { SuspectIcon, createEmptySuspects, caseSuspects } from "./SuspectsBoard";
 import type { CaseSuspects, SuspectEvidence } from "./SuspectsBoard";
 import { toggleMute, isMuted, sfxClick, sfxOpen, sfxClose } from "./lib/audio";
+import { HighlightsContext } from "./HighlightedText";
+import { FolderIcon, SaveIcon, NotepadIcon, TimelineIcon, EmailIcon } from "./Icons";
+import { TimmyReportTab, MagyarReportTab, TimmyTaskTab } from "./ReportTabs";
+import TimelineBoard from "./TimelineBoard";
+import NotesBoard from "./NotesBoard";
+import SaveDialog, { loadAllSaves, persistSaves } from "./SaveDialog";
+import type { CaseId, TabKey, CaseNote, TimelineEvent, SelectionDraft, NoteColor, SaveSlot } from "./types";
 import "./intro.css";
-
-type CaseId = ReportCaseId;
-type TimmyTabKey = "timmy_police" | "timmy_fire" | "timmy_insurance" | "timmy_sal" | "timmy_bianchi" | "timmy_agnes" | "timmy_tony" | "timmy_task";
-type MagyarTabKey = "magyar_police" | "magyar_security" | "magyar_acquisition" | "magyar_tachkis" | "magyar_green" | "magyar_lectures" | "magyar_jameson" | "magyar_personnel" | "magyar_voss" | "magyar_grissom" | "magyar_beggar";
-type TabKey = TimmyTabKey | MagyarTabKey;
-type NoteColor = "amber" | "blue" | "green" | "rose";
-
-type CaseNote = {
-  id: string;
-  kind: "clip" | "blank";
-  text: string;
-  comment: string;
-  color: NoteColor;
-  x: number;
-  y: number;
-  caseId?: CaseId;
-  sourceTab?: TabKey;
-  sourceTitle?: string;
-  sourceBlock?: string;
-  start?: number;
-  end?: number;
-  linkedTo?: string[];
-  disprovedBy?: string;
-};
-
-type TimelineEvent = {
-  id: string;
-  caseId: CaseId;
-  text: string;
-  time: string;
-  comment: string;
-  sourceTab?: TabKey;
-  sourceTitle?: string;
-  sourceBlock?: string;
-};
-
-type SelectionDraft = {
-  text: string;
-  tab: TabKey;
-  block: string;
-  start: number;
-  end: number;
-  x: number;
-  y: number;
-};
 
 const timmyTabs: { key: TabKey; label: string; code: string }[] = [
   ...timmyReports.map((report) => ({ key: report.key as TabKey, label: report.label, code: report.code })),
@@ -73,425 +35,7 @@ const firstTabForCase: Record<CaseId, TabKey> = {
   "magyarosaurus": "magyar_police",
 };
 
-const SAVE_KEY = "special-investigations-saves";
-const MAX_SLOTS = 3;
-
-type SaveSlot = {
-  name: string;
-  savedAt: string;
-  language: "en" | "de";
-  selectedCase: CaseId;
-  activeTab: TabKey;
-  visited: TabKey[];
-  readEmails: number[];
-  notes: CaseNote[];
-  timeline: TimelineEvent[];
-  reports: Record<CaseId, CaseReportData>;
-  allSuspects: Record<CaseId, CaseSuspects>;
-};
-
-function loadAllSaves(): (SaveSlot | null)[] {
-  try {
-    const raw = window.localStorage.getItem(SAVE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw) as (SaveSlot | null)[];
-      while (parsed.length < MAX_SLOTS) parsed.push(null);
-      return parsed.slice(0, MAX_SLOTS);
-    }
-  } catch {}
-  return Array.from({ length: MAX_SLOTS }, () => null);
-}
-
-function persistSaves(slots: (SaveSlot | null)[]) {
-  try { window.localStorage.setItem(SAVE_KEY, JSON.stringify(slots)); } catch {}
-}
-
-const HighlightsContext = createContext<CaseNote[]>([]);
 const noteColors: NoteColor[] = ["amber", "blue", "green", "rose"];
-
-function HighlightedText({ id, children }: { id: string; children: string }) {
-  const notes = useContext(HighlightsContext);
-  const highlights = notes
-    .filter((note) => note.kind === "clip" && note.sourceBlock === id && typeof note.start === "number" && typeof note.end === "number")
-    .sort((a, b) => (a.start ?? 0) - (b.start ?? 0));
-
-  if (!highlights.length) return children;
-
-  const pieces: React.ReactNode[] = [];
-  let cursor = 0;
-  highlights.forEach((highlight) => {
-    const start = Math.max(cursor, Math.min(children.length, highlight.start ?? 0));
-    const end = Math.max(start, Math.min(children.length, highlight.end ?? start));
-    if (start > cursor) pieces.push(children.slice(cursor, start));
-    if (end > start) pieces.push(<mark key={highlight.id} className={`evidence-highlight ${highlight.color}`}>{children.slice(start, end)}</mark>);
-    cursor = Math.max(cursor, end);
-  });
-  if (cursor < children.length) pieces.push(children.slice(cursor));
-  return <>{pieces}</>;
-}
-
-function EvidenceParagraph({ id, children, className }: { id: string; children: string; className?: string }) {
-  return <p className={className} data-evidence-id={id}><HighlightedText id={id}>{children}</HighlightedText></p>;
-}
-
-function FolderIcon({ small = false }: { small?: boolean }) {
-  return (
-    <span className={small ? "folder-icon folder-icon-small" : "folder-icon"} aria-hidden="true">
-      <span />
-    </span>
-  );
-}
-
-
-function TimmyReportTab({ reportKey }: { reportKey: TabKey }) {
-  const report = timmyReports.find((item) => item.key === reportKey);
-  if (!report) return null;
-  return (
-    <article className="document-page german-document">
-      <header className="document-heading">
-        <p>{report.agency}</p>
-        <h2>{report.title}</h2>
-        <div className="report-meta">{report.meta.map((line) => <span key={line}>{line}</span>)}</div>
-      </header>
-      <section className="reading-copy report-copy">
-        {report.sections.map((section, sectionIndex) => (
-          <div className="report-section" key={`${report.key}-${sectionIndex}`}>
-            {section.heading && <h3>{section.heading}</h3>}
-            {section.paragraphs?.map((paragraph, paragraphIndex) => <EvidenceParagraph id={`${report.key}-p-${sectionIndex}-${paragraphIndex}`} key={paragraph}>{paragraph}</EvidenceParagraph>)}
-            {section.bullets && <ul>{section.bullets.map((bullet, bulletIndex) => <li key={bullet}><EvidenceParagraph id={`${report.key}-b-${sectionIndex}-${bulletIndex}`}>{bullet}</EvidenceParagraph></li>)}</ul>}
-            {section.exchanges && (
-              <div className="transcript-section">
-                {section.exchanges.map((exchange, exchangeIndex) => (
-                  <div className="testimony-block" key={`${report.key}-x-${sectionIndex}-${exchangeIndex}`}>
-                    <strong>{exchange.speaker}</strong>
-                    <EvidenceParagraph id={`${report.key}-x-${sectionIndex}-${exchangeIndex}`}>{exchange.text}</EvidenceParagraph>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
-      </section>
-      <footer className="page-stamp">{report.stamp}</footer>
-    </article>
-  );
-}
-
-function MagyarReportTab({ reportKey, lang }: { reportKey: TabKey; lang: "en" | "de" }) {
-  const reports = lang === "de" ? magyarReportsDe : magyarReports;
-  const report = reports.find((item) => item.key === reportKey);
-  if (!report) return null;
-  return (
-    <article className="document-page">
-      <header className="document-heading">
-        <p>{report.agency}</p>
-        <h2>{report.title}</h2>
-        <div className="report-meta">{report.meta.map((line) => <span key={line}>{line}</span>)}</div>
-      </header>
-      <section className="reading-copy report-copy">
-        {report.sections.map((section, sectionIndex) => (
-          <div className="report-section" key={`${report.key}-${sectionIndex}`}>
-            {section.heading && <h3>{section.heading}</h3>}
-            {section.paragraphs?.map((paragraph, paragraphIndex) => <EvidenceParagraph id={`${report.key}-p-${sectionIndex}-${paragraphIndex}`} key={paragraph}>{paragraph}</EvidenceParagraph>)}
-            {section.bullets && <ul>{section.bullets.map((bullet, bulletIndex) => <li key={bullet}><EvidenceParagraph id={`${report.key}-b-${sectionIndex}-${bulletIndex}`}>{bullet}</EvidenceParagraph></li>)}</ul>}
-            {section.exchanges && (
-              <div className="transcript-section">
-                {section.exchanges.map((exchange, exchangeIndex) => (
-                  <div className="testimony-block" key={`${report.key}-x-${sectionIndex}-${exchangeIndex}`}>
-                    <strong>{exchange.speaker}</strong>
-                    <EvidenceParagraph id={`${report.key}-x-${sectionIndex}-${exchangeIndex}`}>{exchange.text}</EvidenceParagraph>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
-      </section>
-      <footer className="page-stamp">{report.stamp}</footer>
-    </article>
-  );
-}
-
-function TimmyTaskTab({ onSubmit }: { onSubmit: () => void }) {
-  return (
-    <article className="document-page german-document">
-      <header className="document-heading">
-        <p>Sonderermittlungen · Ausbildungsauftrag</p>
-        <h2>Der Brand in Timmy Two-Shoes&apos; Restaurant</h2>
-        <span>7 Berichte · 4 mögliche Antworten · 1 Urteil</span>
-      </header>
-      <EvidenceParagraph id="timmy-task-intro" className="task-note">Lies alle sieben Berichte. Ordne die Ereignisse auf der Zeitleiste und vergleiche die Aussagen. Entscheide dann, wer das Restaurant wahrscheinlich angezündet hat. Eine verdächtige Person ist nicht automatisch der Täter.</EvidenceParagraph>
-      <div className="suspect-strip"><span>NIEMAND — UNFALL</span><span>SAL MONTENEGRO</span><span>TIMMY BIANCHI</span><span>DIE MAFIA</span></div>
-      <ol className="task-list">{timmyQuestions.map((question, index) => <li key={question}><span>{String(index + 1).padStart(2, "0")}</span><EvidenceParagraph id={`timmy-question-${index}`}>{question}</EvidenceParagraph></li>)}</ol>
-      <div className="task-submit-panel">
-        <div><span>LETZTER SCHRITT</span><strong>Bereit, den Fall abzuschließen?</strong><p>Gib dein Urteil ab und erkläre, welche Hinweise es stützen.</p></div>
-        <button onClick={onSubmit}>FALL EINREICHEN →</button>
-      </div>
-      <footer className="page-stamp">TIMMY TWO-SHOES / AUFTRAG 07</footer>
-    </article>
-  );
-}
-
-
-function SaveIcon() {
-  return <span className="save-icon" aria-hidden="true"><i /><i /></span>;
-}
-
-function NotepadIcon() {
-  return <span className="notepad-icon" aria-hidden="true"><i /><i /><i /><i /></span>;
-}
-
-function TimelineIcon() {
-  return <span className="timeline-icon" aria-hidden="true"><i /><i /><i /></span>;
-}
-
-function EmailIcon() {
-  return <span className="email-icon" aria-hidden="true"><i /></span>;
-}
-
-function TimelineBoard({
-  events,
-  german,
-  onAdd,
-  onUpdate,
-  onDelete,
-  onMove,
-  onOpenSource,
-  onClose,
-}: {
-  events: TimelineEvent[];
-  german: boolean;
-  onAdd: () => void;
-  onUpdate: (id: string, changes: Partial<TimelineEvent>) => void;
-  onDelete: (id: string) => void;
-  onMove: (id: string, direction: -1 | 1) => void;
-  onOpenSource: (event: TimelineEvent) => void;
-  onClose: () => void;
-}) {
-  return (
-    <section className="timeline-board" role="dialog" aria-modal="true" aria-labelledby="timeline-title">
-      <header className="notes-board-bar timeline-board-bar">
-        <div><TimelineIcon /><span><b id="timeline-title">{german ? "FALL-ZEITLEISTE" : "CASE TIMELINE"}</b><small>{events.length} {german ? "EREIGNISSE · AUF DIESEM GERÄT GESPEICHERT" : "EVENTS · SAVED ON THIS DEVICE"}</small></span></div>
-        <div><button className="add-note-button" onClick={onAdd}>＋ {german ? "NEUES EREIGNIS" : "NEW EVENT"}</button><button className="close-notes-button" onClick={onClose} aria-label="Close timeline">×</button></div>
-      </header>
-      <div className="timeline-canvas">
-        {!events.length ? (
-          <div className="empty-notes"><TimelineIcon /><h2>{german ? "Die Zeitleiste ist noch leer." : "The timeline is empty."}</h2><p>{german ? "Markiere eine Zeitangabe oder ein Ereignis in einem Bericht und wähle ‚Zur Zeitleiste'. Du kannst auch ein eigenes Ereignis erstellen." : "Highlight a time or event in a case file and choose 'Add to Timeline.' You can also create your own event."}</p><button onClick={onAdd}>{german ? "ERSTES EREIGNIS ERSTELLEN" : "CREATE FIRST EVENT"}</button></div>
-        ) : (
-          <ol className="timeline-list">
-            {events.map((event, index) => (
-              <li key={event.id}>
-                <div className="timeline-number">{index + 1}</div>
-                <article className="timeline-card">
-                  <header><input value={event.time} onChange={(change) => onUpdate(event.id, { time: change.target.value })} placeholder={german ? "Zeit oder Datum" : "Time or date"} aria-label={german ? "Zeit oder Datum" : "Time or date"} /><div><button disabled={index === 0} onClick={() => onMove(event.id, -1)} aria-label="Move earlier">↑</button><button disabled={index === events.length - 1} onClick={() => onMove(event.id, 1)} aria-label="Move later">↓</button></div></header>
-                  <textarea className="timeline-event-text" value={event.text} onChange={(change) => onUpdate(event.id, { text: change.target.value })} placeholder={german ? "Was ist passiert?" : "What happened?"} rows={3} />
-                  {event.sourceTab && <button className="note-source" onClick={() => onOpenSource(event)}>↗ {event.sourceTitle}</button>}
-                  <textarea className="timeline-comment" value={event.comment} onChange={(change) => onUpdate(event.id, { comment: change.target.value })} placeholder={german ? "Warum ist dieses Ereignis wichtig?" : "Why does this event matter?"} rows={2} />
-                  <footer><span>{german ? "MIT ↑ UND ↓ SORTIEREN" : "ORDER WITH ↑ AND ↓"}</span><button onClick={() => onDelete(event.id)}>{german ? "LÖSCHEN" : "DELETE"}</button></footer>
-                </article>
-              </li>
-            ))}
-          </ol>
-        )}
-      </div>
-    </section>
-  );
-}
-
-function NotesBoard({
-  notes,
-  german,
-  onAdd,
-  onUpdate,
-  onDelete,
-  onOpenSource,
-  onClose,
-}: {
-  notes: CaseNote[];
-  german: boolean;
-  onAdd: () => void;
-  onUpdate: (id: string, changes: Partial<CaseNote>) => void;
-  onDelete: (id: string) => void;
-  onOpenSource: (note: CaseNote) => void;
-  onClose: () => void;
-}) {
-  const canvasRef = useRef<HTMLDivElement>(null);
-  const [drag, setDrag] = useState<{ id: string; offsetX: number; offsetY: number } | null>(null);
-  const [linkPicker, setLinkPicker] = useState<{ noteId: string; mode: "link" | "disprove" } | null>(null);
-
-  const snippet = (note: CaseNote) => (note.text || "Untitled").slice(0, 40) + (note.text.length > 40 ? "…" : "");
-
-  const addLink = (fromId: string, toId: string) => {
-    const note = notes.find((n) => n.id === fromId);
-    if (!note) return;
-    const existing = note.linkedTo ?? [];
-    if (!existing.includes(toId)) onUpdate(fromId, { linkedTo: [...existing, toId] });
-    const target = notes.find((n) => n.id === toId);
-    if (target) {
-      const targetLinks = target.linkedTo ?? [];
-      if (!targetLinks.includes(fromId)) onUpdate(toId, { linkedTo: [...targetLinks, fromId] });
-    }
-    setLinkPicker(null);
-  };
-
-  const markDisproved = (noteId: string, byId: string) => {
-    onUpdate(noteId, { disprovedBy: byId });
-    setLinkPicker(null);
-  };
-
-  const clearDisproved = (noteId: string) => {
-    onUpdate(noteId, { disprovedBy: undefined });
-  };
-
-  const removeLink = (fromId: string, toId: string) => {
-    const note = notes.find((n) => n.id === fromId);
-    if (note) onUpdate(fromId, { linkedTo: (note.linkedTo ?? []).filter((id) => id !== toId) });
-    const target = notes.find((n) => n.id === toId);
-    if (target) onUpdate(toId, { linkedTo: (target.linkedTo ?? []).filter((id) => id !== fromId) });
-  };
-
-  const beginDrag = (event: React.PointerEvent<HTMLElement>, note: CaseNote) => {
-    if (window.innerWidth <= 700) return;
-    const card = event.currentTarget.closest(".note-card") as HTMLElement | null;
-    if (!card) return;
-    const bounds = card.getBoundingClientRect();
-    event.currentTarget.setPointerCapture(event.pointerId);
-    setDrag({ id: note.id, offsetX: event.clientX - bounds.left, offsetY: event.clientY - bounds.top });
-  };
-
-  const moveDrag = (event: React.PointerEvent<HTMLElement>) => {
-    if (!drag || !canvasRef.current) return;
-    const bounds = canvasRef.current.getBoundingClientRect();
-    const x = Math.max(1, Math.min(80, ((event.clientX - bounds.left - drag.offsetX) / bounds.width) * 100));
-    const y = Math.max(2, Math.min(78, ((event.clientY - bounds.top - drag.offsetY) / bounds.height) * 100));
-    onUpdate(drag.id, { x, y });
-  };
-
-  return (
-    <section className="notes-board" role="dialog" aria-modal="true" aria-labelledby="notes-title">
-      <header className="notes-board-bar">
-        <div><NotepadIcon /><span><b id="notes-title">{german ? "BONES' NOTIZEN" : "BONES' NOTES"}</b><small>{notes.length} {german ? "NOTIZEN · AUF DIESEM GERÄT GESPEICHERT" : `${notes.length === 1 ? "NOTE" : "NOTES"} · SAVED ON THIS DEVICE`}</small></span></div>
-        <div><button className="add-note-button" onClick={onAdd}>＋ {german ? "NEUE NOTIZ" : "NEW DETECTIVE NOTE"}</button><button className="close-notes-button" onClick={onClose} aria-label="Close notes">×</button></div>
-      </header>
-      <div className="notes-canvas" ref={canvasRef} onPointerMove={moveDrag} onPointerUp={() => setDrag(null)} onPointerCancel={() => setDrag(null)}>
-        <div className="board-grid" aria-hidden="true" />
-        {notes.length > 0 && (() => {
-          const links: { x1: number; y1: number; x2: number; y2: number; disproved: boolean }[] = [];
-          const seen = new Set<string>();
-          notes.forEach((note) => {
-            (note.linkedTo ?? []).forEach((targetId) => {
-              const pair = [note.id, targetId].sort().join("|");
-              if (seen.has(pair)) return;
-              seen.add(pair);
-              const target = notes.find((n) => n.id === targetId);
-              if (!target) return;
-              links.push({ x1: note.x + 5, y1: note.y + 3, x2: target.x + 5, y2: target.y + 3, disproved: false });
-            });
-            if (note.disprovedBy) {
-              const by = notes.find((n) => n.id === note.disprovedBy);
-              if (by) {
-                const pair = [note.id, note.disprovedBy].sort().join("|d");
-                if (!seen.has(pair)) {
-                  seen.add(pair);
-                  links.push({ x1: note.x + 5, y1: note.y + 3, x2: by.x + 5, y2: by.y + 3, disproved: true });
-                }
-              }
-            }
-          });
-          return links.length > 0 ? (
-            <svg className="note-links-svg" aria-hidden="true">
-              {links.map((link, i) => (
-                <line key={i} x1={`${link.x1}%`} y1={`${link.y1}%`} x2={`${link.x2}%`} y2={`${link.y2}%`} className={link.disproved ? "link-line disproved" : "link-line"} />
-              ))}
-            </svg>
-          ) : null;
-        })()}
-        {!notes.length && (
-          <div className="empty-notes"><NotepadIcon /><h2>{german ? "Noch keine Hinweise notiert." : "No clues pinned yet."}</h2><p>{german ? "Markiere eine Passage und wähle ‚Zu Notizen', oder erstelle eine leere Ermittlungsnotiz." : <>Highlight a passage in a case file and choose <b>Flag to Notes</b>, or create a blank detective note.</>}</p><button onClick={onAdd}>{german ? "ERSTE NOTIZ ERSTELLEN" : "CREATE FIRST NOTE"}</button></div>
-        )}
-        {notes.map((note, index) => (
-          <article
-            className={`note-card ${note.kind} ${note.color} ${drag?.id === note.id ? "dragging" : ""}${note.disprovedBy ? " disproved" : ""}`}
-            key={note.id}
-            style={{ left: `${note.x}%`, top: `${note.y}%`, zIndex: drag?.id === note.id ? 8 : 2 + index }}
-          >
-            {note.disprovedBy && (
-              <div className="disproved-badge">
-                <span>{german ? "WIDERLEGT" : "DISPROVED"}</span>
-                <button onClick={() => clearDisproved(note.id)} aria-label="Remove disproved status">×</button>
-              </div>
-            )}
-            <header className="note-drag-handle" onPointerDown={(event) => beginDrag(event, note)}>
-              <span>{note.kind === "clip" ? (german ? "MARKIERTER HINWEIS" : "FLAGGED EVIDENCE") : (german ? "ERMITTLUNGSNOTIZ" : "DETECTIVE NOTE")}</span>
-              {(note.linkedTo?.length ?? 0) > 0 && <span className="link-count">🔗 {note.linkedTo!.length}</span>}
-              <i aria-hidden="true">⠿</i>
-            </header>
-            <div className="note-body">
-              <div className="note-origin">
-                <span>SOURCE / QUELLE</span>
-                {note.kind === "clip" ? (
-                  <button className="note-source" onClick={() => onOpenSource(note)}>↗ {note.caseId === "magyarosaurus" ? "SID-2026-0002" : "NPD-2026-1187"} · {note.sourceTitle ?? "Case file / Fallakte"}</button>
-                ) : (
-                  <b>{note.caseId === "magyarosaurus" ? "SID-2026-0002" : "NPD-2026-1187"} · {german ? "Eigene Notiz" : "Student-created note"}</b>
-                )}
-              </div>
-              {note.kind === "clip" ? (
-                <>
-                  <blockquote>"{note.text}"</blockquote>
-                  <label><span>{german ? "WARUM IST DAS WICHTIG?" : "WHY DOES THIS MATTER?"}</span><textarea value={note.comment} onChange={(event) => onUpdate(note.id, { comment: event.target.value })} placeholder={german ? "Schreibe deine Begründung…" : "Add your reasoning…"} rows={3} /></label>
-                </>
-              ) : (
-                <label className="blank-note-field"><span>{german ? "DEINE NOTIZ" : "YOUR NOTE"}</span><textarea autoFocus={!note.text} value={note.text} onChange={(event) => onUpdate(note.id, { text: event.target.value })} placeholder={german ? "Schreibe eine Theorie, Frage oder Zeitangabe…" : "Type a theory, question, timeline detail…"} rows={7} /></label>
-              )}
-              {(note.linkedTo?.length ?? 0) > 0 && (
-                <div className="note-links-list">
-                  <span>{german ? "VERKNÜPFT MIT" : "LINKED TO"}</span>
-                  {note.linkedTo!.map((lid) => {
-                    const linked = notes.find((n) => n.id === lid);
-                    if (!linked) return null;
-                    return <div key={lid} className="note-link-row"><span>{snippet(linked)}</span><button onClick={() => removeLink(note.id, lid)} aria-label="Remove link">×</button></div>;
-                  })}
-                </div>
-              )}
-              {note.disprovedBy && (() => {
-                const by = notes.find((n) => n.id === note.disprovedBy);
-                return by ? <div className="note-links-list disproved-by"><span>{german ? "WIDERLEGT DURCH" : "DISPROVED BY"}</span><div className="note-link-row"><span>{snippet(by)}</span></div></div> : null;
-              })()}
-              <footer>
-                <div className="note-colors" aria-label="Note colour">
-                  {noteColors.map((color) => <button key={color} className={color === note.color ? `${color} selected` : color} onClick={() => onUpdate(note.id, { color })} aria-label={`Use ${color} note`} />)}
-                </div>
-                <div className="note-actions">
-                  <button className="note-action-btn" onClick={() => setLinkPicker({ noteId: note.id, mode: "link" })}>🔗 {german ? "VERKNÜPFEN" : "LINK"}</button>
-                  {!note.disprovedBy && <button className="note-action-btn disprove-btn" onClick={() => setLinkPicker({ noteId: note.id, mode: "disprove" })}>✕ {german ? "WIDERLEGEN" : "DISPROVE"}</button>}
-                  <button className="delete-note" onClick={() => onDelete(note.id)}>{german ? "LÖSCHEN" : "DELETE"}</button>
-                </div>
-              </footer>
-              {linkPicker?.noteId === note.id && (
-                <div className="link-picker">
-                  <div className="link-picker-header">
-                    <span>{linkPicker.mode === "link" ? (german ? "Verknüpfen mit…" : "Link to…") : (german ? "Widerlegt durch…" : "Disproved by…")}</span>
-                    <button onClick={() => setLinkPicker(null)}>×</button>
-                  </div>
-                  <div className="link-picker-list">
-                    {notes.filter((n) => n.id !== note.id && !(linkPicker.mode === "link" && (note.linkedTo ?? []).includes(n.id))).map((n) => (
-                      <button key={n.id} onClick={() => linkPicker.mode === "link" ? addLink(note.id, n.id) : markDisproved(note.id, n.id)}>
-                        <span className={`link-picker-dot ${n.color}`} />{snippet(n)}
-                      </button>
-                    ))}
-                    {notes.filter((n) => n.id !== note.id && !(linkPicker.mode === "link" && (note.linkedTo ?? []).includes(n.id))).length === 0 && (
-                      <span className="link-picker-empty">{german ? "Keine anderen Notizen" : "No other notes"}</span>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </article>
-        ))}
-      </div>
-    </section>
-  );
-}
 
 export default function Home() {
   const [view, setView] = useState<"intro" | "map" | "terminal" | LocationId>("intro");
@@ -664,7 +208,6 @@ export default function Home() {
         });
       }
     } catch {
-      // A damaged local draft should never prevent a new report from being written.
     } finally {
       setReportsLoaded(true);
     }
@@ -675,7 +218,6 @@ export default function Home() {
     try {
       window.localStorage.setItem("special-investigations-case-reports-v2", JSON.stringify(reports));
     } catch {
-      // The report remains usable for the current session if storage is unavailable.
     }
   }, [reports, reportsLoaded]);
 
@@ -684,7 +226,6 @@ export default function Home() {
       const saved = window.localStorage.getItem("case-81-f-notes-v1");
       if (saved) setNotes((JSON.parse(saved) as CaseNote[]).map((note) => ({ ...note, caseId: "timmy-two-shoes" as CaseId })));
     } catch {
-      // Notes simply begin empty if local browser storage is unavailable.
     } finally {
       setNotesLoaded(true);
     }
@@ -695,7 +236,6 @@ export default function Home() {
     try {
       window.localStorage.setItem("case-81-f-notes-v1", JSON.stringify(notes));
     } catch {
-      // Keep the board usable for the current session even without persistence.
     }
   }, [notes, notesLoaded]);
 
@@ -704,7 +244,6 @@ export default function Home() {
       const saved = window.localStorage.getItem("special-investigations-timeline-v1");
       if (saved) setTimeline(JSON.parse(saved) as TimelineEvent[]);
     } catch {
-      // A damaged saved timeline should not block the terminal.
     } finally {
       setTimelineLoaded(true);
     }
@@ -715,7 +254,6 @@ export default function Home() {
     try {
       window.localStorage.setItem("special-investigations-timeline-v1", JSON.stringify(timeline));
     } catch {
-      // Keep the timeline usable for the current session.
     }
   }, [timeline, timelineLoaded]);
 
@@ -1163,39 +701,21 @@ export default function Home() {
             )}
 
             {saveOpen && (
-              <section className="save-window" role="dialog" aria-modal="true" aria-label="Save / Load Game">
-                <header className="window-titlebar"><span><SaveIcon />SAVE / LOAD</span><button onClick={() => { sfxClose(); setSaveOpen(false); setConfirmOverwrite(null); setConfirmLoad(null); setConfirmDelete(null); }} aria-label="Close save window">×</button></header>
-                <div className="window-toolbar"><span>GAME PROGRESS</span><span>{MAX_SLOTS} SLOTS</span></div>
-                <div className="save-slot-list">
-                  {saveSlots.map((slot, i) => (
-                    <div key={i} className={`save-slot${slot ? " occupied" : ""}`}>
-                      <div className="save-slot-info">
-                        <strong>{slot ? slot.name : `Slot ${i + 1} — empty`}</strong>
-                        {slot && <small>{new Date(slot.savedAt).toLocaleString()} · {slot.notes.length} notes · {slot.timeline.length} events</small>}
-                      </div>
-                      <div className="save-slot-actions">
-                        {confirmOverwrite === i ? (
-                          <span className="save-confirm">Overwrite? <button onClick={() => saveToSlot(i)}>Yes</button><button onClick={() => setConfirmOverwrite(null)}>No</button></span>
-                        ) : confirmLoad === i ? (
-                          <span className="save-confirm">Load this save? <button onClick={() => loadFromSlot(i)}>Yes</button><button onClick={() => setConfirmLoad(null)}>No</button></span>
-                        ) : confirmDelete === i ? (
-                          <span className="save-confirm">Delete? <button onClick={() => deleteSlot(i)}>Yes</button><button onClick={() => setConfirmDelete(null)}>No</button></span>
-                        ) : (
-                          <>
-                            <button className="save-btn" onClick={() => { if (slot) { setConfirmOverwrite(i); } else { saveToSlot(i); } }}>SAVE</button>
-                            {slot && <button className="load-btn" onClick={() => setConfirmLoad(i)}>LOAD</button>}
-                            {slot && <button className="delete-btn" onClick={() => setConfirmDelete(i)}>×</button>}
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="save-file-actions">
-                  <button onClick={exportSave}>EXPORT TO FILE</button>
-                  <button onClick={importSave}>IMPORT FROM FILE</button>
-                </div>
-              </section>
+              <SaveDialog
+                slots={saveSlots}
+                onSave={saveToSlot}
+                onLoad={loadFromSlot}
+                onDelete={deleteSlot}
+                onExport={exportSave}
+                onImport={importSave}
+                onClose={() => { sfxClose(); setSaveOpen(false); setConfirmOverwrite(null); setConfirmLoad(null); setConfirmDelete(null); }}
+                confirmOverwrite={confirmOverwrite}
+                confirmLoad={confirmLoad}
+                confirmDelete={confirmDelete}
+                setConfirmOverwrite={setConfirmOverwrite}
+                setConfirmLoad={setConfirmLoad}
+                setConfirmDelete={setConfirmDelete}
+              />
             )}
           </div>
         ) : (
