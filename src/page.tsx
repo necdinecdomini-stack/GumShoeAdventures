@@ -1,16 +1,21 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { timmyQuestions, timmyReports } from "./timmy-data";
+import { magyarReports } from "./magyarosaurus-data";
 import { CaseReportApp, ReportIcon, createEmptyReport } from "./case-report";
 import type { CaseReportData, ReportCaseId, ReportSource } from "./case-report";
 import ComicIntro from "./ComicIntro";
 import CityMap from "./CityMap";
 import type { LocationId } from "./CityMap";
+import SuspectsBoard, { SuspectIcon, createEmptySuspects, caseSuspects } from "./SuspectsBoard";
+import type { CaseSuspects, SuspectEvidence } from "./SuspectsBoard";
 import { toggleMute, isMuted, sfxClick, sfxOpen, sfxClose } from "./lib/audio";
 import "./intro.css";
 
 type CaseId = ReportCaseId;
-type TabKey = "timmy_police" | "timmy_fire" | "timmy_insurance" | "timmy_sal" | "timmy_bianchi" | "timmy_agnes" | "timmy_tony" | "timmy_task";
+type TimmyTabKey = "timmy_police" | "timmy_fire" | "timmy_insurance" | "timmy_sal" | "timmy_bianchi" | "timmy_agnes" | "timmy_tony" | "timmy_task";
+type MagyarTabKey = "magyar_police" | "magyar_security" | "magyar_acquisition" | "magyar_tachkis" | "magyar_green" | "magyar_lectures" | "magyar_jameson" | "magyar_personnel" | "magyar_voss" | "magyar_grissom" | "magyar_beggar";
+type TabKey = TimmyTabKey | MagyarTabKey;
 type Verdict = "" | "accident" | "sal" | "timmy" | "mafia";
 type NoteColor = "amber" | "blue" | "green" | "rose";
 
@@ -28,6 +33,8 @@ type CaseNote = {
   sourceBlock?: string;
   start?: number;
   end?: number;
+  linkedTo?: string[];
+  disprovedBy?: string;
 };
 
 type TimelineEvent = {
@@ -56,7 +63,16 @@ const timmyTabs: { key: TabKey; label: string; code: string }[] = [
   { key: "timmy_task", label: "Ermittlungsauftrag", code: "08" },
 ];
 
-const tabs = [...timmyTabs];
+const magyarTabs: { key: TabKey; label: string; code: string }[] = [
+  ...magyarReports.map((report) => ({ key: report.key as TabKey, label: report.label, code: report.code })),
+];
+
+const tabs = [...timmyTabs, ...magyarTabs];
+
+const firstTabForCase: Record<CaseId, TabKey> = {
+  "timmy-two-shoes": "timmy_police",
+  "magyarosaurus": "magyar_police",
+};
 
 const HighlightsContext = createContext<CaseNote[]>([]);
 const noteColors: NoteColor[] = ["amber", "blue", "green", "rose"];
@@ -100,6 +116,40 @@ function TimmyReportTab({ reportKey }: { reportKey: TabKey }) {
   if (!report) return null;
   return (
     <article className="document-page german-document">
+      <header className="document-heading">
+        <p>{report.agency}</p>
+        <h2>{report.title}</h2>
+        <div className="report-meta">{report.meta.map((line) => <span key={line}>{line}</span>)}</div>
+      </header>
+      <section className="reading-copy report-copy">
+        {report.sections.map((section, sectionIndex) => (
+          <div className="report-section" key={`${report.key}-${sectionIndex}`}>
+            {section.heading && <h3>{section.heading}</h3>}
+            {section.paragraphs?.map((paragraph, paragraphIndex) => <EvidenceParagraph id={`${report.key}-p-${sectionIndex}-${paragraphIndex}`} key={paragraph}>{paragraph}</EvidenceParagraph>)}
+            {section.bullets && <ul>{section.bullets.map((bullet, bulletIndex) => <li key={bullet}><EvidenceParagraph id={`${report.key}-b-${sectionIndex}-${bulletIndex}`}>{bullet}</EvidenceParagraph></li>)}</ul>}
+            {section.exchanges && (
+              <div className="transcript-section">
+                {section.exchanges.map((exchange, exchangeIndex) => (
+                  <div className="testimony-block" key={`${report.key}-x-${sectionIndex}-${exchangeIndex}`}>
+                    <strong>{exchange.speaker}</strong>
+                    <EvidenceParagraph id={`${report.key}-x-${sectionIndex}-${exchangeIndex}`}>{exchange.text}</EvidenceParagraph>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </section>
+      <footer className="page-stamp">{report.stamp}</footer>
+    </article>
+  );
+}
+
+function MagyarReportTab({ reportKey }: { reportKey: TabKey }) {
+  const report = magyarReports.find((item) => item.key === reportKey);
+  if (!report) return null;
+  return (
+    <article className="document-page">
       <header className="document-heading">
         <p>{report.agency}</p>
         <h2>{report.title}</h2>
@@ -234,6 +284,10 @@ function TimelineIcon() {
   return <span className="timeline-icon" aria-hidden="true"><i /><i /><i /></span>;
 }
 
+function EmailIcon() {
+  return <span className="email-icon" aria-hidden="true"><i /></span>;
+}
+
 function TimelineBoard({
   events,
   german,
@@ -261,7 +315,7 @@ function TimelineBoard({
       </header>
       <div className="timeline-canvas">
         {!events.length ? (
-          <div className="empty-notes"><TimelineIcon /><h2>{german ? "Die Zeitleiste ist noch leer." : "The timeline is empty."}</h2><p>{german ? "Markiere eine Zeitangabe oder ein Ereignis in einem Bericht und wähle ‚Zur Zeitleiste‘. Du kannst auch ein eigenes Ereignis erstellen." : "Highlight a time or event in a case file and choose ‘Add to Timeline.’ You can also create your own event."}</p><button onClick={onAdd}>{german ? "ERSTES EREIGNIS ERSTELLEN" : "CREATE FIRST EVENT"}</button></div>
+          <div className="empty-notes"><TimelineIcon /><h2>{german ? "Die Zeitleiste ist noch leer." : "The timeline is empty."}</h2><p>{german ? "Markiere eine Zeitangabe oder ein Ereignis in einem Bericht und wähle ‚Zur Zeitleiste'. Du kannst auch ein eigenes Ereignis erstellen." : "Highlight a time or event in a case file and choose 'Add to Timeline.' You can also create your own event."}</p><button onClick={onAdd}>{german ? "ERSTES EREIGNIS ERSTELLEN" : "CREATE FIRST EVENT"}</button></div>
         ) : (
           <ol className="timeline-list">
             {events.map((event, index) => (
@@ -302,6 +356,38 @@ function NotesBoard({
 }) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [drag, setDrag] = useState<{ id: string; offsetX: number; offsetY: number } | null>(null);
+  const [linkPicker, setLinkPicker] = useState<{ noteId: string; mode: "link" | "disprove" } | null>(null);
+
+  const snippet = (note: CaseNote) => (note.text || "Untitled").slice(0, 40) + (note.text.length > 40 ? "…" : "");
+
+  const addLink = (fromId: string, toId: string) => {
+    const note = notes.find((n) => n.id === fromId);
+    if (!note) return;
+    const existing = note.linkedTo ?? [];
+    if (!existing.includes(toId)) onUpdate(fromId, { linkedTo: [...existing, toId] });
+    const target = notes.find((n) => n.id === toId);
+    if (target) {
+      const targetLinks = target.linkedTo ?? [];
+      if (!targetLinks.includes(fromId)) onUpdate(toId, { linkedTo: [...targetLinks, fromId] });
+    }
+    setLinkPicker(null);
+  };
+
+  const markDisproved = (noteId: string, byId: string) => {
+    onUpdate(noteId, { disprovedBy: byId });
+    setLinkPicker(null);
+  };
+
+  const clearDisproved = (noteId: string) => {
+    onUpdate(noteId, { disprovedBy: undefined });
+  };
+
+  const removeLink = (fromId: string, toId: string) => {
+    const note = notes.find((n) => n.id === fromId);
+    if (note) onUpdate(fromId, { linkedTo: (note.linkedTo ?? []).filter((id) => id !== toId) });
+    const target = notes.find((n) => n.id === toId);
+    if (target) onUpdate(toId, { linkedTo: (target.linkedTo ?? []).filter((id) => id !== fromId) });
+  };
 
   const beginDrag = (event: React.PointerEvent<HTMLElement>, note: CaseNote) => {
     if (window.innerWidth <= 700) return;
@@ -329,40 +415,84 @@ function NotesBoard({
       <div className="notes-canvas" ref={canvasRef} onPointerMove={moveDrag} onPointerUp={() => setDrag(null)} onPointerCancel={() => setDrag(null)}>
         <div className="board-grid" aria-hidden="true" />
         {!notes.length && (
-          <div className="empty-notes"><NotepadIcon /><h2>{german ? "Noch keine Hinweise notiert." : "No clues pinned yet."}</h2><p>{german ? "Markiere eine Passage und wähle ‚Zu Notizen‘, oder erstelle eine leere Ermittlungsnotiz." : <>Highlight a passage in a case file and choose <b>Flag to Notes</b>, or create a blank detective note.</>}</p><button onClick={onAdd}>{german ? "ERSTE NOTIZ ERSTELLEN" : "CREATE FIRST NOTE"}</button></div>
+          <div className="empty-notes"><NotepadIcon /><h2>{german ? "Noch keine Hinweise notiert." : "No clues pinned yet."}</h2><p>{german ? "Markiere eine Passage und wähle ‚Zu Notizen', oder erstelle eine leere Ermittlungsnotiz." : <>Highlight a passage in a case file and choose <b>Flag to Notes</b>, or create a blank detective note.</>}</p><button onClick={onAdd}>{german ? "ERSTE NOTIZ ERSTELLEN" : "CREATE FIRST NOTE"}</button></div>
         )}
         {notes.map((note, index) => (
           <article
-            className={`note-card ${note.kind} ${note.color} ${drag?.id === note.id ? "dragging" : ""}`}
+            className={`note-card ${note.kind} ${note.color} ${drag?.id === note.id ? "dragging" : ""}${note.disprovedBy ? " disproved" : ""}`}
             key={note.id}
             style={{ left: `${note.x}%`, top: `${note.y}%`, zIndex: drag?.id === note.id ? 8 : 2 + index }}
           >
+            {note.disprovedBy && (
+              <div className="disproved-badge">
+                <span>{german ? "WIDERLEGT" : "DISPROVED"}</span>
+                <button onClick={() => clearDisproved(note.id)} aria-label="Remove disproved status">×</button>
+              </div>
+            )}
             <header className="note-drag-handle" onPointerDown={(event) => beginDrag(event, note)}>
-              <span>{note.kind === "clip" ? (german ? "MARKIERTER HINWEIS" : "FLAGGED EVIDENCE") : (german ? "ERMITTLUNGSNOTIZ" : "DETECTIVE NOTE")}</span><i aria-hidden="true">⠿</i>
+              <span>{note.kind === "clip" ? (german ? "MARKIERTER HINWEIS" : "FLAGGED EVIDENCE") : (german ? "ERMITTLUNGSNOTIZ" : "DETECTIVE NOTE")}</span>
+              {(note.linkedTo?.length ?? 0) > 0 && <span className="link-count">🔗 {note.linkedTo!.length}</span>}
+              <i aria-hidden="true">⠿</i>
             </header>
             <div className="note-body">
               <div className="note-origin">
                 <span>SOURCE / QUELLE</span>
                 {note.kind === "clip" ? (
-                  <button className="note-source" onClick={() => onOpenSource(note)}>↗ NPD-2026-1187 · {note.sourceTitle ?? "Case file / Fallakte"}</button>
+                  <button className="note-source" onClick={() => onOpenSource(note)}>↗ {note.caseId === "magyarosaurus" ? "SID-2026-0002" : "NPD-2026-1187"} · {note.sourceTitle ?? "Case file / Fallakte"}</button>
                 ) : (
-                  <b>NPD-2026-1187 · Student-created note / Eigene Notiz</b>
+                  <b>{note.caseId === "magyarosaurus" ? "SID-2026-0002" : "NPD-2026-1187"} · {german ? "Eigene Notiz" : "Student-created note"}</b>
                 )}
               </div>
               {note.kind === "clip" ? (
                 <>
-                  <blockquote>“{note.text}”</blockquote>
+                  <blockquote>"{note.text}"</blockquote>
                   <label><span>{german ? "WARUM IST DAS WICHTIG?" : "WHY DOES THIS MATTER?"}</span><textarea value={note.comment} onChange={(event) => onUpdate(note.id, { comment: event.target.value })} placeholder={german ? "Schreibe deine Begründung…" : "Add your reasoning…"} rows={3} /></label>
                 </>
               ) : (
                 <label className="blank-note-field"><span>{german ? "DEINE NOTIZ" : "YOUR NOTE"}</span><textarea autoFocus={!note.text} value={note.text} onChange={(event) => onUpdate(note.id, { text: event.target.value })} placeholder={german ? "Schreibe eine Theorie, Frage oder Zeitangabe…" : "Type a theory, question, timeline detail…"} rows={7} /></label>
               )}
+              {(note.linkedTo?.length ?? 0) > 0 && (
+                <div className="note-links-list">
+                  <span>{german ? "VERKNÜPFT MIT" : "LINKED TO"}</span>
+                  {note.linkedTo!.map((lid) => {
+                    const linked = notes.find((n) => n.id === lid);
+                    if (!linked) return null;
+                    return <div key={lid} className="note-link-row"><span>{snippet(linked)}</span><button onClick={() => removeLink(note.id, lid)} aria-label="Remove link">×</button></div>;
+                  })}
+                </div>
+              )}
+              {note.disprovedBy && (() => {
+                const by = notes.find((n) => n.id === note.disprovedBy);
+                return by ? <div className="note-links-list disproved-by"><span>{german ? "WIDERLEGT DURCH" : "DISPROVED BY"}</span><div className="note-link-row"><span>{snippet(by)}</span></div></div> : null;
+              })()}
               <footer>
                 <div className="note-colors" aria-label="Note colour">
                   {noteColors.map((color) => <button key={color} className={color === note.color ? `${color} selected` : color} onClick={() => onUpdate(note.id, { color })} aria-label={`Use ${color} note`} />)}
                 </div>
-                <button className="delete-note" onClick={() => onDelete(note.id)}>{german ? "LÖSCHEN" : "DELETE"}</button>
+                <div className="note-actions">
+                  <button className="note-action-btn" onClick={() => setLinkPicker({ noteId: note.id, mode: "link" })}>🔗 {german ? "VERKNÜPFEN" : "LINK"}</button>
+                  {!note.disprovedBy && <button className="note-action-btn disprove-btn" onClick={() => setLinkPicker({ noteId: note.id, mode: "disprove" })}>✕ {german ? "WIDERLEGEN" : "DISPROVE"}</button>}
+                  <button className="delete-note" onClick={() => onDelete(note.id)}>{german ? "LÖSCHEN" : "DELETE"}</button>
+                </div>
               </footer>
+              {linkPicker?.noteId === note.id && (
+                <div className="link-picker">
+                  <div className="link-picker-header">
+                    <span>{linkPicker.mode === "link" ? (german ? "Verknüpfen mit…" : "Link to…") : (german ? "Widerlegt durch…" : "Disproved by…")}</span>
+                    <button onClick={() => setLinkPicker(null)}>×</button>
+                  </div>
+                  <div className="link-picker-list">
+                    {notes.filter((n) => n.id !== note.id && !(linkPicker.mode === "link" && (note.linkedTo ?? []).includes(n.id))).map((n) => (
+                      <button key={n.id} onClick={() => linkPicker.mode === "link" ? addLink(note.id, n.id) : markDisproved(note.id, n.id)}>
+                        <span className={`link-picker-dot ${n.color}`} />{snippet(n)}
+                      </button>
+                    ))}
+                    {notes.filter((n) => n.id !== note.id && !(linkPicker.mode === "link" && (note.linkedTo ?? []).includes(n.id))).length === 0 && (
+                      <span className="link-picker-empty">{german ? "Keine anderen Notizen" : "No other notes"}</span>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </article>
         ))}
@@ -382,6 +512,7 @@ export default function Home() {
   const [submitOpen, setSubmitOpen] = useState(false);
   const [reports, setReports] = useState<Record<CaseId, CaseReportData>>(() => ({
     "timmy-two-shoes": createEmptyReport(),
+    "magyarosaurus": createEmptyReport(),
   }));
   const [reportsLoaded, setReportsLoaded] = useState(false);
   const [notes, setNotes] = useState<CaseNote[]>([]);
@@ -392,6 +523,16 @@ export default function Home() {
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
   const [timelineLoaded, setTimelineLoaded] = useState(false);
   const [timelineOpen, setTimelineOpen] = useState(false);
+  const [emailOpen, setEmailOpen] = useState(false);
+  const [activeEmail, setActiveEmail] = useState<number | null>(null);
+  const [readEmails, setReadEmails] = useState<Set<number>>(new Set());
+  const [suspectsOpen, setSuspectsOpen] = useState(false);
+  const [allSuspects, setAllSuspects] = useState<Record<CaseId, CaseSuspects>>(() => ({
+    "timmy-two-shoes": createEmptySuspects("timmy-two-shoes"),
+    "magyarosaurus": createEmptySuspects("magyarosaurus"),
+  }));
+  const [suspectsLoaded, setSuspectsLoaded] = useState(false);
+  const [suspectPicker, setSuspectPicker] = useState<{ text: string; tab: TabKey; source: string; x: number; y: number } | null>(null);
 
   useEffect(() => {
     try {
@@ -400,6 +541,7 @@ export default function Home() {
         const parsed = JSON.parse(saved) as Partial<Record<CaseId, CaseReportData>>;
         setReports({
           "timmy-two-shoes": parsed["timmy-two-shoes"] ?? createEmptyReport(),
+          "magyarosaurus": parsed["magyarosaurus"] ?? createEmptyReport(),
         });
       }
     } catch {
@@ -459,6 +601,30 @@ export default function Home() {
   }, [timeline, timelineLoaded]);
 
   useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem("special-investigations-suspects-v1");
+      if (saved) {
+        const parsed = JSON.parse(saved) as Partial<Record<CaseId, CaseSuspects>>;
+        setAllSuspects({
+          "timmy-two-shoes": parsed["timmy-two-shoes"] ?? createEmptySuspects("timmy-two-shoes"),
+          "magyarosaurus": parsed["magyarosaurus"] ?? createEmptySuspects("magyarosaurus"),
+        });
+      }
+    } catch {
+    } finally {
+      setSuspectsLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!suspectsLoaded) return;
+    try {
+      window.localStorage.setItem("special-investigations-suspects-v1", JSON.stringify(allSuspects));
+    } catch {
+    }
+  }, [allSuspects, suspectsLoaded]);
+
+  useEffect(() => {
     if (!noteToast) return;
     const timer = window.setTimeout(() => setNoteToast(""), 2200);
     return () => window.clearTimeout(timer);
@@ -510,7 +676,7 @@ export default function Home() {
     setVisited((current) => new Set([...current, key]));
   };
 
-  const currentTabs = timmyTabs;
+  const currentTabs = selectedCase === "magyarosaurus" ? magyarTabs : timmyTabs;
   const currentVisited = currentTabs.filter((tab) => visited.has(tab.key)).length;
   const caseNotes = notes.filter((note) => (note.caseId ?? "timmy-two-shoes") === selectedCase);
   const caseTimeline = timeline.filter((event) => event.caseId === selectedCase);
@@ -540,7 +706,7 @@ export default function Home() {
     setCaseOpen(true);
     setFolderOpen(false);
     setSubmitOpen(false);
-    openTab("timmy_police");
+    openTab(firstTabForCase[caseId]);
   };
 
   const captureSelection = () => {
@@ -683,6 +849,32 @@ export default function Home() {
     window.getSelection()?.removeAllRanges();
   };
 
+  const currentSuspects = allSuspects[selectedCase] ?? createEmptySuspects(selectedCase);
+
+  const flagToSuspect = (suspectId: string, type: "incriminating" | "exonerating") => {
+    if (!suspectPicker) return;
+    const suspects = allSuspects[selectedCase] ?? createEmptySuspects(selectedCase);
+    const suspect = suspects[suspectId];
+    if (!suspect) return;
+    const newEvidence: SuspectEvidence = {
+      id: window.crypto?.randomUUID?.() ?? `ev-${Date.now()}`,
+      type,
+      text: suspectPicker.text,
+      source: suspectPicker.source,
+    };
+    setAllSuspects((current) => ({
+      ...current,
+      [selectedCase]: {
+        ...suspects,
+        [suspectId]: { ...suspect, evidence: [...suspect.evidence, newEvidence] },
+      },
+    }));
+    setSuspectPicker(null);
+    setSelectionDraft(null);
+    setNoteToast(germanCase ? "Beweis dem Verdächtigen zugeordnet." : "Evidence linked to suspect.");
+    window.getSelection()?.removeAllRanges();
+  };
+
   const moveTimelineEvent = (id: string, direction: -1 | 1) => {
     setTimeline((current) => {
       const scoped = current.filter((event) => event.caseId === selectedCase);
@@ -744,13 +936,27 @@ export default function Home() {
               <ReportIcon />
               <span>CASE REPORT<br />ABSCHLUSSBERICHT</span>
             </button>
-            <div className="desktop-status"><span>1 case assigned</span><span>Network: secure</span></div>
+            <button className="folder-button email-desktop-button" onClick={() => { sfxOpen(); setEmailOpen(true); }} aria-label="Open email">
+              <EmailIcon />
+              <span>E-MAIL</span>
+              {2 - readEmails.size > 0 && <b>{2 - readEmails.size}</b>}
+            </button>
+            <button className="folder-button suspects-desktop-button" onClick={() => { sfxOpen(); setSuspectsOpen(true); }} aria-label="Open suspects board">
+              <SuspectIcon />
+              <span>SUSPECTS</span>
+            </button>
+            <div className="desktop-status"><span>2 cases assigned</span><span>Network: secure</span></div>
 
             {folderOpen && (
               <section className="file-window" aria-label="Case Files folder">
                 <header className="window-titlebar"><span><FolderIcon small />CASE FILES</span><button onClick={() => { sfxClose(); setFolderOpen(false); }} aria-label="Close folder">×</button></header>
-                <div className="window-toolbar"><span>ACTIVE INVESTIGATIONS</span><span>1 ITEM</span></div>
+                <div className="window-toolbar"><span>ACTIVE INVESTIGATIONS</span><span>2 ITEMS</span></div>
                 <div className="file-list">
+                  <button className="case-file" onClick={() => openCase("magyarosaurus")}>
+                    <span className="paper-file" aria-hidden="true">MDC</span>
+                    <span><strong>The Missing Magyarosaurus</strong><small>Case SID-2026-0002 · English · 11 Documents</small></span>
+                    <b aria-hidden="true">OPEN →</b>
+                  </button>
                   <button className="case-file" onClick={() => openCase("timmy-two-shoes")}>
                     <span className="paper-file german-file" aria-hidden="true">TTS</span>
                     <span><strong>Der Brand in Timmy Two-Shoes&apos; Restaurant</strong><small>Aktenzeichen NPD-2026-1187 · Deutsch · 7 Dokumente</small></span>
@@ -759,12 +965,75 @@ export default function Home() {
                 </div>
               </section>
             )}
+
+            {emailOpen && (
+              <section className="email-window" role="dialog" aria-modal="true" aria-label="Email">
+                <header className="window-titlebar"><span><EmailIcon />E-MAIL</span><button onClick={() => { sfxClose(); setEmailOpen(false); setActiveEmail(null); }} aria-label="Close email">×</button></header>
+                <div className="window-toolbar"><span>INBOX</span><span>2 MESSAGES</span></div>
+                {activeEmail === null ? (
+                  <div className="email-inbox">
+                    <button className={`email-row${readEmails.has(1) ? " read" : ""}`} onClick={() => { setActiveEmail(1); setReadEmails((prev) => new Set(prev).add(1)); }}>
+                      <span className="email-row-from">Chief Nymos</span>
+                      <span className="email-row-subject">New case — Missing Magyarosaurus</span>
+                      <span className="email-row-date">Jun 25</span>
+                    </button>
+                    <button className={`email-row${readEmails.has(0) ? " read" : ""}`} onClick={() => { setActiveEmail(0); setReadEmails((prev) => new Set(prev).add(0)); }}>
+                      <span className="email-row-from">Chief Nymos</span>
+                      <span className="email-row-subject">Update from Japan — Report language change</span>
+                      <span className="email-row-date">Jun 20</span>
+                    </button>
+                  </div>
+                ) : activeEmail === 0 ? (
+                  <div className="email-body">
+                    <button className="email-back" onClick={() => setActiveEmail(null)}>← INBOX</button>
+                    <div className="email-header">
+                      <div className="email-field"><span className="email-label">FROM:</span><span>Chief Nymos &lt;nemo@rpd.neuheim.gov&gt;</span></div>
+                      <div className="email-field"><span className="email-label">TO:</span><span>Det. &quot;Bones&quot; Malone &lt;bones@rpd.neuheim.gov&gt;</span></div>
+                      <div className="email-field"><span className="email-label">DATE:</span><span>June 20, 2026 — 03:14 AM JST</span></div>
+                      <div className="email-field"><span className="email-label">SUBJECT:</span><span className="email-subject">Update from Japan — Report language change</span></div>
+                    </div>
+                    <div className="email-content">
+                      <p>Hello Bones,</p>
+                      <p>We&apos;re still in Japan. As you can see, the Chief is having the time of his life though the number of Kaiju emerging from the ocean is... problematic. Still, it&apos;s only a matter of time before we wrap this up too.</p>
+                      <p>Small wrinkle, the Chief has been exposed to a BIT of radiation and... well... he&apos;s lost his grasp on every other language.</p>
+                      <p>So... until we figure out how to reverse the damage any reports you submit are going to have to be in English.</p>
+                      <p>Cheers.</p>
+                      <div className="email-attachment">
+                        <div className="email-attachment-label">📎 ATTACHMENT: Chief_In_Japan.png</div>
+                        <img src="./email/chief-japan.png" alt="The Chief in Japan, fighting Kaiju alongside a giant mech" />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="email-body">
+                    <button className="email-back" onClick={() => setActiveEmail(null)}>← INBOX</button>
+                    <div className="email-header">
+                      <div className="email-field"><span className="email-label">FROM:</span><span>Chief Nymos &lt;nemo@rpd.neuheim.gov&gt;</span></div>
+                      <div className="email-field"><span className="email-label">TO:</span><span>Det. &quot;Bones&quot; Malone &lt;bones@rpd.neuheim.gov&gt;</span></div>
+                      <div className="email-field"><span className="email-label">DATE:</span><span>June 25, 2026 — 11:42 PM JST</span></div>
+                      <div className="email-field"><span className="email-label">SUBJECT:</span><span className="email-subject">New case — Missing Magyarosaurus</span></div>
+                    </div>
+                    <div className="email-content">
+                      <p>Hello Bones.</p>
+                      <p>We have something new.</p>
+                      <p>But first. Look at this! What a massive radioactive beastie.</p>
+                      <p>You. My friend. Are also going to be looking into beasties. Specifically the kind that went extinct 66 Million Years Ago. A Magyarosaurus vanished from the Natural History Museum. If it walked off. Call me and I&apos;ll help you hunt the zombie dino. If someone helped it walk off. Find out who.</p>
+                      <p>— The Chief.</p>
+                      <div className="email-attachment">
+                        <div className="email-attachment-label">📎 ATTACHMENT: Chief_Radioactive_Beastie.png</div>
+                        <img src="./email/chief-case2.png" alt="The Chief standing triumphantly on a captured radioactive beast" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </section>
+            )}
           </div>
         ) : (
           <div className="case-reader">
             <header className="case-reader-titlebar"><span><FolderIcon small />CASE FILES</span><button onClick={() => { sfxClose(); setCaseOpen(false); }} aria-label="Close case files">×</button></header>
             <aside className="case-sidebar">
-              <div className="case-id-block"><span>AKTIVER FALL</span><strong>TTS</strong><p>Der Brand in Timmy Two-Shoes&apos; Restaurant</p></div>
+              <div className="case-id-block"><span>{germanCase ? "AKTIVER FALL" : "ACTIVE CASE"}</span><strong>{selectedCase === "magyarosaurus" ? "MDC" : "TTS"}</strong><p>{selectedCase === "magyarosaurus" ? "The Missing Magyarosaurus" : "Der Brand in Timmy Two-Shoes' Restaurant"}</p></div>
               <nav aria-label="Case documents">
                 {currentTabs.map((tab) => (
                   <button key={tab.key} className={activeTab === tab.key ? "active" : ""} onClick={() => openTab(tab.key)}>
@@ -775,6 +1044,7 @@ export default function Home() {
               <div className="case-tool-buttons">
                 <button className="open-notes-button" onClick={() => setNotesOpen(true)}><NotepadIcon /><b>BONES&apos; NOTES</b><span>{caseNotes.length}</span></button>
                 <button className="open-notes-button open-timeline-button" onClick={() => setTimelineOpen(true)}><TimelineIcon /><b>{germanCase ? "ZEITLEISTE" : "TIMELINE"}</b><span>{caseTimeline.length}</span></button>
+                <button className="open-notes-button open-suspects-button" onClick={() => setSuspectsOpen(true)}><SuspectIcon /><b>{germanCase ? "VERDÄCHTIGE" : "SUSPECTS"}</b><span>{Object.keys(currentSuspects).length}</span></button>
               </div>
               <button className={submitted ? "submit-case-button submitted" : "submit-case-button"} onClick={() => setSubmitOpen(true)}><span>{submitted ? "✓" : "↗"}</span><b>{submitted ? "REPORT SUBMITTED / BERICHT EINGEREICHT" : "CASE REPORT / ABSCHLUSSBERICHT"}</b></button>
               <div className="review-meter"><span>{germanCase ? "DOKUMENTE GELESEN" : "DOCUMENTS REVIEWED"}</span><div><i style={{ width: `${(currentVisited / currentTabs.length) * 100}%` }} /></div><b>{currentVisited} / {currentTabs.length}</b></div>
@@ -782,8 +1052,9 @@ export default function Home() {
             <section className="document-view">
               <div className="document-toolbar"><span>{activeTitle}</span><span>SELECT TEXT TO FLAG</span></div>
               <div className="document-scroll" onMouseUp={captureSelection} onTouchEnd={() => window.setTimeout(captureSelection, 0)}>
-                {activeTab !== "timmy_task" && <TimmyReportTab reportKey={activeTab} />}
+                {activeTab.startsWith("timmy_") && activeTab !== "timmy_task" && <TimmyReportTab reportKey={activeTab} />}
                 {activeTab === "timmy_task" && <TimmyTaskTab onSubmit={() => setSubmitOpen(true)} />}
+                {activeTab.startsWith("magyar_") && <MagyarReportTab reportKey={activeTab} />}
               </div>
             </section>
           </div>
@@ -791,12 +1062,29 @@ export default function Home() {
         </HighlightsContext.Provider>
         {selectionDraft && (
           <div className="selection-tool" style={{ left: selectionDraft.x, top: selectionDraft.y }}>
-            <button onClick={flagSelection}>⚑ {germanCase ? "ZU NOTIZEN" : "FLAG TO NOTES"}</button><button onClick={addSelectionToTimeline}>≡ {germanCase ? "ZUR ZEITLEISTE" : "ADD TO TIMELINE"}</button><button onClick={() => { setSelectionDraft(null); window.getSelection()?.removeAllRanges(); }} aria-label="Dismiss selection tool">×</button>
+            <button onClick={flagSelection}>⚑ {germanCase ? "ZU NOTIZEN" : "FLAG TO NOTES"}</button><button onClick={addSelectionToTimeline}>≡ {germanCase ? "ZUR ZEITLEISTE" : "ADD TO TIMELINE"}</button><button className="suspect-flag-btn" onClick={() => { setSuspectPicker({ text: selectionDraft.text, tab: selectionDraft.tab, source: tabs.find((t) => t.key === selectionDraft.tab)?.label ?? "Case file", x: selectionDraft.x, y: selectionDraft.y + 40 }); }}>⊕ {germanCase ? "VERDÄCHTIGEM" : "TO SUSPECT"}</button><button onClick={() => { setSelectionDraft(null); window.getSelection()?.removeAllRanges(); }} aria-label="Dismiss selection tool">×</button>
           </div>
         )}
         {noteToast && <div className="note-toast" role="status">{noteToast}</div>}
+        {suspectPicker && (
+          <div className="suspect-picker" style={{ left: suspectPicker.x, top: suspectPicker.y }}>
+            <div className="suspect-picker-header"><span>{germanCase ? "VERDÄCHTIGEM ZUORDNEN" : "LINK TO SUSPECT"}</span><button onClick={() => setSuspectPicker(null)}>×</button></div>
+            <div className="suspect-picker-list">
+              {(caseSuspects[selectedCase] ?? []).map((def) => (
+                <div key={def.id} style={{ display: "flex", alignItems: "center", borderBottom: "1px solid rgba(119,200,192,.08)" }}>
+                  <span style={{ flex: 1, padding: ".6rem .7rem", color: "#d3e4e1", font: '.72rem "Courier New", monospace' }}>{def.name}</span>
+                  <div className="picker-type">
+                    <button className="incr" onClick={() => flagToSuspect(def.id, "incriminating")}>⊕</button>
+                    <button className="exon" onClick={() => flagToSuspect(def.id, "exonerating")}>⊖</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         {notesOpen && <NotesBoard notes={caseNotes} german={germanCase} onAdd={addBlankNote} onUpdate={updateNote} onDelete={(id) => setNotes((current) => current.filter((note) => note.id !== id))} onOpenSource={openNoteSource} onClose={() => setNotesOpen(false)} />}
         {timelineOpen && <TimelineBoard events={caseTimeline} german={germanCase} onAdd={addBlankTimelineEvent} onUpdate={updateTimelineEvent} onDelete={(id) => setTimeline((current) => current.filter((event) => event.id !== id))} onMove={moveTimelineEvent} onOpenSource={openTimelineSource} onClose={() => setTimelineOpen(false)} />}
+        {suspectsOpen && <SuspectsBoard suspects={currentSuspects} german={germanCase} onUpdate={(updated) => setAllSuspects((current) => ({ ...current, [selectedCase]: updated }))} onClose={() => setSuspectsOpen(false)} />}
         {submitOpen && <CaseReportApp caseId={selectedCase} report={currentReport} sources={reportSources} reviewed={currentVisited} total={currentTabs.length} onCaseChange={setSelectedCase} onChange={(report) => setReports((current) => ({ ...current, [selectedCase]: report }))} onClose={() => setSubmitOpen(false)} />}
       </section>
     </main>
