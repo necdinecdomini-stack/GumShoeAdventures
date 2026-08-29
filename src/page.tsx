@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { timmyQuestions, timmyReports } from "./timmy-data";
 import { magyarReports } from "./magyarosaurus-data";
 import { magyarReportsDe } from "./magyarosaurus-data-de";
@@ -72,6 +72,39 @@ const firstTabForCase: Record<CaseId, TabKey> = {
   "timmy-two-shoes": "timmy_police",
   "magyarosaurus": "magyar_police",
 };
+
+const SAVE_KEY = "special-investigations-saves";
+const MAX_SLOTS = 3;
+
+type SaveSlot = {
+  name: string;
+  savedAt: string;
+  language: "en" | "de";
+  selectedCase: CaseId;
+  activeTab: TabKey;
+  visited: TabKey[];
+  readEmails: number[];
+  notes: CaseNote[];
+  timeline: TimelineEvent[];
+  reports: Record<CaseId, CaseReportData>;
+  allSuspects: Record<CaseId, CaseSuspects>;
+};
+
+function loadAllSaves(): (SaveSlot | null)[] {
+  try {
+    const raw = window.localStorage.getItem(SAVE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as (SaveSlot | null)[];
+      while (parsed.length < MAX_SLOTS) parsed.push(null);
+      return parsed.slice(0, MAX_SLOTS);
+    }
+  } catch {}
+  return Array.from({ length: MAX_SLOTS }, () => null);
+}
+
+function persistSaves(slots: (SaveSlot | null)[]) {
+  try { window.localStorage.setItem(SAVE_KEY, JSON.stringify(slots)); } catch {}
+}
 
 const HighlightsContext = createContext<CaseNote[]>([]);
 const noteColors: NoteColor[] = ["amber", "blue", "green", "rose"];
@@ -199,6 +232,10 @@ function TimmyTaskTab({ onSubmit }: { onSubmit: () => void }) {
   );
 }
 
+
+function SaveIcon() {
+  return <span className="save-icon" aria-hidden="true"><i /><i /></span>;
+}
 
 function NotepadIcon() {
   return <span className="notepad-icon" aria-hidden="true"><i /><i /><i /><i /></span>;
@@ -489,6 +526,132 @@ export default function Home() {
   }));
   const [suspectsLoaded, setSuspectsLoaded] = useState(false);
   const [suspectPicker, setSuspectPicker] = useState<{ text: string; tab: TabKey; source: string; x: number; y: number } | null>(null);
+  const [saveOpen, setSaveOpen] = useState(false);
+  const [saveSlots, setSaveSlots] = useState<(SaveSlot | null)[]>(() => loadAllSaves());
+  const [saveToast, setSaveToast] = useState("");
+  const [confirmOverwrite, setConfirmOverwrite] = useState<number | null>(null);
+  const [confirmLoad, setConfirmLoad] = useState<number | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
+
+  const buildSaveSlot = useCallback((name: string): SaveSlot => ({
+    name,
+    savedAt: new Date().toISOString(),
+    language,
+    selectedCase,
+    activeTab,
+    visited: [...visited],
+    readEmails: [...readEmails],
+    notes,
+    timeline,
+    reports,
+    allSuspects,
+  }), [language, selectedCase, activeTab, visited, readEmails, notes, timeline, reports, allSuspects]);
+
+  const saveToSlot = useCallback((index: number) => {
+    const slot = buildSaveSlot(`Save ${index + 1}`);
+    setSaveSlots((current) => {
+      const next = [...current];
+      next[index] = slot;
+      persistSaves(next);
+      return next;
+    });
+    setSaveToast("Game saved.");
+    setConfirmOverwrite(null);
+  }, [buildSaveSlot]);
+
+  const loadFromSlot = useCallback((index: number) => {
+    const slot = saveSlots[index];
+    if (!slot) return;
+    setLanguage(slot.language);
+    setSelectedCase(slot.selectedCase);
+    setActiveTab(slot.activeTab);
+    setVisited(new Set(slot.visited));
+    setReadEmails(new Set(slot.readEmails));
+    setNotes(slot.notes);
+    setTimeline(slot.timeline);
+    setReports(slot.reports);
+    setAllSuspects(slot.allSuspects);
+    setReportsLoaded(true);
+    setNotesLoaded(true);
+    setTimelineLoaded(true);
+    setSuspectsLoaded(true);
+    setSaveOpen(false);
+    setConfirmLoad(null);
+    setCaseOpen(false);
+    setFolderOpen(false);
+    setSaveToast("Game loaded.");
+  }, [saveSlots]);
+
+  const deleteSlot = useCallback((index: number) => {
+    setSaveSlots((current) => {
+      const next = [...current];
+      next[index] = null;
+      persistSaves(next);
+      return next;
+    });
+    setConfirmDelete(null);
+    setSaveToast("Save deleted.");
+  }, []);
+
+  const exportSave = useCallback(() => {
+    const slot = buildSaveSlot("Export");
+    const json = JSON.stringify(slot, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `SID-save-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setSaveToast("Save exported to file.");
+  }, [buildSaveSlot]);
+
+  const importSave = useCallback(() => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const slot = JSON.parse(reader.result as string) as SaveSlot;
+          if (!slot.notes || !slot.reports || !slot.allSuspects) {
+            setSaveToast("Invalid save file.");
+            return;
+          }
+          setLanguage(slot.language ?? "en");
+          setSelectedCase(slot.selectedCase ?? "timmy-two-shoes");
+          setActiveTab(slot.activeTab ?? "timmy_police");
+          setVisited(new Set(slot.visited ?? ["timmy_police"]));
+          setReadEmails(new Set(slot.readEmails ?? []));
+          setNotes(slot.notes);
+          setTimeline(slot.timeline ?? []);
+          setReports(slot.reports);
+          setAllSuspects(slot.allSuspects);
+          setReportsLoaded(true);
+          setNotesLoaded(true);
+          setTimelineLoaded(true);
+          setSuspectsLoaded(true);
+          setSaveOpen(false);
+          setCaseOpen(false);
+          setFolderOpen(false);
+          setSaveToast("Save imported successfully.");
+        } catch {
+          setSaveToast("Could not read save file.");
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  }, []);
+
+  useEffect(() => {
+    if (!saveToast) return;
+    const timer = window.setTimeout(() => setSaveToast(""), 2500);
+    return () => window.clearTimeout(timer);
+  }, [saveToast]);
 
   useEffect(() => {
     try {
@@ -911,6 +1074,10 @@ export default function Home() {
               <ReportIcon />
               <span>FINAL REPORT<br />ABSCHLUSSBERICHT</span>
             </button>
+            <button className="folder-button save-desktop-button" onClick={() => { sfxOpen(); setSaveOpen(true); }} aria-label="Save or load game">
+              <SaveIcon />
+              <span>SAVE / LOAD</span>
+            </button>
             <div className="desktop-status"><span>2 cases assigned</span><span>Network: secure</span></div>
 
             {folderOpen && (
@@ -994,6 +1161,42 @@ export default function Home() {
                 )}
               </section>
             )}
+
+            {saveOpen && (
+              <section className="save-window" role="dialog" aria-modal="true" aria-label="Save / Load Game">
+                <header className="window-titlebar"><span><SaveIcon />SAVE / LOAD</span><button onClick={() => { sfxClose(); setSaveOpen(false); setConfirmOverwrite(null); setConfirmLoad(null); setConfirmDelete(null); }} aria-label="Close save window">×</button></header>
+                <div className="window-toolbar"><span>GAME PROGRESS</span><span>{MAX_SLOTS} SLOTS</span></div>
+                <div className="save-slot-list">
+                  {saveSlots.map((slot, i) => (
+                    <div key={i} className={`save-slot${slot ? " occupied" : ""}`}>
+                      <div className="save-slot-info">
+                        <strong>{slot ? slot.name : `Slot ${i + 1} — empty`}</strong>
+                        {slot && <small>{new Date(slot.savedAt).toLocaleString()} · {slot.notes.length} notes · {slot.timeline.length} events</small>}
+                      </div>
+                      <div className="save-slot-actions">
+                        {confirmOverwrite === i ? (
+                          <span className="save-confirm">Overwrite? <button onClick={() => saveToSlot(i)}>Yes</button><button onClick={() => setConfirmOverwrite(null)}>No</button></span>
+                        ) : confirmLoad === i ? (
+                          <span className="save-confirm">Load this save? <button onClick={() => loadFromSlot(i)}>Yes</button><button onClick={() => setConfirmLoad(null)}>No</button></span>
+                        ) : confirmDelete === i ? (
+                          <span className="save-confirm">Delete? <button onClick={() => deleteSlot(i)}>Yes</button><button onClick={() => setConfirmDelete(null)}>No</button></span>
+                        ) : (
+                          <>
+                            <button className="save-btn" onClick={() => { if (slot) { setConfirmOverwrite(i); } else { saveToSlot(i); } }}>SAVE</button>
+                            {slot && <button className="load-btn" onClick={() => setConfirmLoad(i)}>LOAD</button>}
+                            {slot && <button className="delete-btn" onClick={() => setConfirmDelete(i)}>×</button>}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="save-file-actions">
+                  <button onClick={exportSave}>EXPORT TO FILE</button>
+                  <button onClick={importSave}>IMPORT FROM FILE</button>
+                </div>
+              </section>
+            )}
           </div>
         ) : (
           <div className="case-reader">
@@ -1032,6 +1235,7 @@ export default function Home() {
           </div>
         )}
         {noteToast && <div className="note-toast" role="status">{noteToast}</div>}
+        {saveToast && <div className="note-toast" role="status">{saveToast}</div>}
         {suspectPicker && (
           <div className="suspect-picker" style={{ left: suspectPicker.x, top: suspectPicker.y }}>
             <div className="suspect-picker-header"><span>{germanCase ? "VERDÄCHTIGEM ZUORDNEN" : "LINK TO SUSPECT"}</span><button onClick={() => setSuspectPicker(null)}>×</button></div>

@@ -593,6 +593,52 @@ button { font: inherit; }
   .suspect-status-controls { flex-wrap: wrap; }
 }
 
+/* ── Save / Load ── */
+.save-desktop-button { left: 78%; }
+.save-icon { position: relative; display: inline-block; width: 62px; height: 60px; border: 2px solid #668381; border-radius: 4px; background: #102e34; box-shadow: 6px 7px 0 #425b5a, 0 10px 20px rgba(0,0,0,.25); }
+.save-icon::before { content: ""; position: absolute; top: 5px; left: 50%; transform: translateX(-50%); width: 28px; height: 20px; border: 2px solid #d3b260; background: rgba(211,178,96,.12); }
+.save-icon::after { content: ""; position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 22px; height: 10px; border: 1px solid #668381; background: #0a1e24; }
+.save-icon i:first-child { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 10px solid #d3b260; }
+.save-icon i:last-child { position: absolute; top: 7px; left: 50%; transform: translateX(-50%); width: 3px; height: 10px; background: #d3b260; }
+
+.save-window { position: absolute; z-index: 5; top: 8%; left: 50%; transform: translateX(-50%); width: min(580px, 90%); max-height: 82%; border: 1px solid #547077; background: #0c2229; box-shadow: 0 30px 80px rgba(0,0,0,.55); display: flex; flex-direction: column; overflow-y: auto; }
+.save-window .save-icon { width: 18px; height: 17px; border-width: 1px; box-shadow: none; border-radius: 2px; vertical-align: middle; margin-right: .5rem; }
+.save-window .save-icon::before { top: 2px; width: 9px; height: 6px; border-width: 1px; }
+.save-window .save-icon::after { bottom: 2px; width: 7px; height: 4px; }
+.save-window .save-icon i { display: none; }
+
+.save-slot-list { display: grid; gap: 0; }
+.save-slot { display: flex; align-items: center; justify-content: space-between; gap: .8rem; padding: .9rem 1.2rem; border-bottom: 1px solid var(--line); }
+.save-slot-info { display: grid; gap: .2rem; }
+.save-slot-info strong { color: #6f928d; font: 700 .82rem "Courier New", monospace; }
+.save-slot.occupied .save-slot-info strong { color: #d3e4e1; }
+.save-slot-info small { color: #5a7d78; font: .68rem "Courier New", monospace; }
+.save-slot-actions { display: flex; gap: .4rem; align-items: center; flex-shrink: 0; }
+.save-slot-actions button { border: 1px solid #3e5d5e; background: transparent; color: var(--teal-soft); padding: .35rem .7rem; font: 700 .62rem "Courier New", monospace; letter-spacing: .06em; cursor: pointer; }
+.save-slot-actions button:hover { background: rgba(110,201,192,.12); border-color: var(--teal); }
+.save-slot-actions .save-btn { color: #d3b260; border-color: rgba(211,178,96,.35); }
+.save-slot-actions .save-btn:hover { background: rgba(211,178,96,.12); border-color: #d3b260; }
+.save-slot-actions .load-btn { color: var(--teal-soft); }
+.save-slot-actions .delete-btn { color: #b75548; border-color: rgba(183,85,72,.3); padding: .35rem .5rem; }
+.save-slot-actions .delete-btn:hover { background: rgba(183,85,72,.12); border-color: #b75548; }
+
+.save-confirm { display: flex; align-items: center; gap: .4rem; color: #d3b260; font: 700 .65rem "Courier New", monospace; white-space: nowrap; }
+.save-confirm button { border: 1px solid #3e5d5e; background: transparent; padding: .25rem .5rem; font: 700 .6rem "Courier New", monospace; cursor: pointer; }
+.save-confirm button:first-of-type { color: #5ab77a; border-color: rgba(96,223,155,.3); }
+.save-confirm button:first-of-type:hover { background: rgba(96,223,155,.12); }
+.save-confirm button:last-of-type { color: #b75548; border-color: rgba(183,85,72,.3); }
+.save-confirm button:last-of-type:hover { background: rgba(183,85,72,.12); }
+
+.save-file-actions { display: flex; gap: .5rem; padding: 1rem 1.2rem; border-top: 1px solid var(--line); }
+.save-file-actions button { flex: 1; border: 1px solid #3e5d5e; background: transparent; color: #91aaa6; padding: .55rem .8rem; font: 700 .65rem "Courier New", monospace; letter-spacing: .06em; cursor: pointer; }
+.save-file-actions button:hover { background: rgba(110,201,192,.08); border-color: var(--teal); color: var(--teal-soft); }
+
+@media (max-width: 640px) {
+  .save-desktop-button { left: 1.2rem; top: 82%; }
+  .save-slot { flex-direction: column; align-items: flex-start; }
+  .save-file-actions { flex-direction: column; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
   .comic-scene, .phone .comic-sound, .lightning-image, .lightning::after, .lightning .scene-shade { animation: none !important; }

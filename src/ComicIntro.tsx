@@ -167,7 +167,7 @@ export default function ComicIntro({ onComplete }: { onComplete: (language: "en"
     <div id="intro">
       {phase === "loading" && (
         <div className="loading-screen">
-          <div className="loading-badge">S.I.</div>
+          <div className="loading-badge">S.I.D.</div>
           <div className="loading-title">Special Investigations</div>
           <div className="loading-sub">Loading case files…</div>
           <div className="loading-bar-track">
