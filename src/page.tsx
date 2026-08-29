@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import type { FormEvent } from "react";
 import { timmyQuestions, timmyReports } from "./timmy-data";
 import { magyarReports } from "./magyarosaurus-data";
 import { CaseReportApp, ReportIcon, createEmptyReport } from "./case-report";
@@ -16,7 +15,6 @@ type CaseId = ReportCaseId;
 type TimmyTabKey = "timmy_police" | "timmy_fire" | "timmy_insurance" | "timmy_sal" | "timmy_bianchi" | "timmy_agnes" | "timmy_tony" | "timmy_task";
 type MagyarTabKey = "magyar_police" | "magyar_security" | "magyar_acquisition" | "magyar_tachkis" | "magyar_green" | "magyar_lectures" | "magyar_jameson" | "magyar_personnel" | "magyar_voss" | "magyar_grissom" | "magyar_beggar";
 type TabKey = TimmyTabKey | MagyarTabKey;
-type Verdict = "" | "accident" | "sal" | "timmy" | "mafia";
 type NoteColor = "amber" | "blue" | "green" | "rose";
 
 type CaseNote = {
@@ -200,82 +198,6 @@ function TimmyTaskTab({ onSubmit }: { onSubmit: () => void }) {
 }
 
 
-function SubmitCaseModal({
-  caseId,
-  verdict,
-  reasoning,
-  submitted,
-  reviewed,
-  total,
-  onVerdict,
-  onReasoning,
-  onClose,
-  onSubmit,
-  onEdit,
-}: {
-  caseId: CaseId;
-  verdict: Verdict;
-  reasoning: string;
-  submitted: boolean;
-  reviewed: number;
-  total: number;
-  onVerdict: (value: Verdict) => void;
-  onReasoning: (value: string) => void;
-  onClose: () => void;
-  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-  onEdit: () => void;
-}) {
-  const wordCount = reasoning.trim() ? reasoning.trim().split(/\s+/).length : 0;
-  const german = caseId === "timmy-two-shoes";
-  const verdictOptions: [Exclude<Verdict, "">, string][] = [
-    ["accident", "Niemand — es war ein Unfall"],
-    ["sal", "Sal Montenegro"],
-    ["timmy", "Timmy Bianchi"],
-    ["mafia", "Die Mafia"],
-  ];
-
-  const downloadSubmission = () => {
-    const verdictLabel = verdictOptions.find(([value]) => value === verdict)?.[1] ?? (german ? "Nicht angegeben" : "Not supplied");
-    const text = german
-      ? `SONDERERMITTLUNGEN — TIMMY TWO-SHOES\n\nUrteil: ${verdictLabel}\n\nBegründung:\n${reasoning}\n`
-      : `SPECIAL INVESTIGATIONS — CASE 81-F\n\nConclusion: ${verdictLabel}\n\nReasoning:\n${reasoning}\n`;
-    const url = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = german ? "timmy-two-shoes-urteil.txt" : "case-81-f-submission.txt";
-    link.click();
-    URL.revokeObjectURL(url);
-  };
-
-  return (
-    <div className="submit-overlay" role="dialog" aria-modal="true" aria-labelledby="submit-title">
-      <section className="submit-window">
-        <header><span>{german ? "TIMMY TWO-SHOES · ABSCHLUSSBERICHT" : "CASE 81-F · FINAL REPORT"}</span><button onClick={onClose} aria-label="Close submission form">×</button></header>
-        {submitted ? (
-          <div className="submission-receipt">
-            <div className="submitted-stamp">{german ? "FALL EINGEREICHT" : "CASE SUBMITTED"}</div>
-            <h2 id="submit-title">{german ? "Dein Urteil wurde gespeichert." : "Your conclusion has been recorded."}</h2>
-            <p>{german ? "Der Bericht ist auf diesem Gerät gespeichert. Du kannst eine Kopie für deine Lehrkraft herunterladen oder deine Antwort bearbeiten." : "The report is saved on this device. You can download a copy for your teacher or return to edit your answer."}</p>
-            <div className="receipt-actions"><button className="secondary-action" onClick={onEdit}>{german ? "BERICHT BEARBEITEN" : "EDIT REPORT"}</button><button className="primary-action" onClick={downloadSubmission}>{german ? "BERICHT HERUNTERLADEN" : "DOWNLOAD REPORT"}</button></div>
-          </div>
-        ) : (
-          <form onSubmit={onSubmit}>
-            <div className="submit-heading"><p>{german ? "URTEIL DER ERMITTLUNG" : "INVESTIGATOR'S CONCLUSION"}</p><h2 id="submit-title">{german ? "Fall einreichen" : "Submit Case"}</h2><span>{german ? `${reviewed} von ${total} Dokumenten gelesen` : `${reviewed} of ${total} documents reviewed`}</span></div>
-            <fieldset>
-              <legend>{german ? "Was ist dein Urteil?" : "What is your conclusion?"}</legend>
-              {verdictOptions.map(([value, label]) => (
-                <label key={value} className={verdict === value ? "selected" : ""}><input type="radio" name="verdict" value={value} checked={verdict === value} onChange={() => onVerdict(value)} required /><span>{label}</span></label>
-              ))}
-            </fieldset>
-            <label className="reasoning-field"><span>{german ? "Erkläre deine Antwort. Benutze konkrete Hinweise aus den Berichten." : "Explain your answer. Use specific evidence from the case files."}</span><textarea value={reasoning} onChange={(event) => onReasoning(event.target.value)} rows={8} minLength={80} required placeholder={german ? "Ich glaube, dass… Der stärkste Hinweis ist… Allerdings…" : "I conclude that… The strongest evidence is… However…"} /><small>{wordCount} {german ? "Wörter · Ziel: 120–180 Wörter" : "words · aim for 120–180 words"}</small></label>
-            <div className="form-actions"><button type="button" className="secondary-action" onClick={onClose}>{german ? "ZURÜCK ZU DEN AKTEN" : "RETURN TO FILES"}</button><button type="submit" className="primary-action">{german ? "URTEIL SPEICHERN" : "FILE CONCLUSION"}</button></div>
-          </form>
-        )}
-      </section>
-    </div>
-  );
-}
-
 function NotepadIcon() {
   return <span className="notepad-icon" aria-hidden="true"><i /><i /><i /><i /></span>;
 }
@@ -414,6 +336,37 @@ function NotesBoard({
       </header>
       <div className="notes-canvas" ref={canvasRef} onPointerMove={moveDrag} onPointerUp={() => setDrag(null)} onPointerCancel={() => setDrag(null)}>
         <div className="board-grid" aria-hidden="true" />
+        {notes.length > 0 && (() => {
+          const links: { x1: number; y1: number; x2: number; y2: number; disproved: boolean }[] = [];
+          const seen = new Set<string>();
+          notes.forEach((note) => {
+            (note.linkedTo ?? []).forEach((targetId) => {
+              const pair = [note.id, targetId].sort().join("|");
+              if (seen.has(pair)) return;
+              seen.add(pair);
+              const target = notes.find((n) => n.id === targetId);
+              if (!target) return;
+              links.push({ x1: note.x + 5, y1: note.y + 3, x2: target.x + 5, y2: target.y + 3, disproved: false });
+            });
+            if (note.disprovedBy) {
+              const by = notes.find((n) => n.id === note.disprovedBy);
+              if (by) {
+                const pair = [note.id, note.disprovedBy].sort().join("|d");
+                if (!seen.has(pair)) {
+                  seen.add(pair);
+                  links.push({ x1: note.x + 5, y1: note.y + 3, x2: by.x + 5, y2: by.y + 3, disproved: true });
+                }
+              }
+            }
+          });
+          return links.length > 0 ? (
+            <svg className="note-links-svg" aria-hidden="true">
+              {links.map((link, i) => (
+                <line key={i} x1={`${link.x1}%`} y1={`${link.y1}%`} x2={`${link.x2}%`} y2={`${link.y2}%`} className={link.disproved ? "link-line disproved" : "link-line"} />
+              ))}
+            </svg>
+          ) : null;
+        })()}
         {!notes.length && (
           <div className="empty-notes"><NotepadIcon /><h2>{german ? "Noch keine Hinweise notiert." : "No clues pinned yet."}</h2><p>{german ? "Markiere eine Passage und wähle ‚Zu Notizen', oder erstelle eine leere Ermittlungsnotiz." : <>Highlight a passage in a case file and choose <b>Flag to Notes</b>, or create a blank detective note.</>}</p><button onClick={onAdd}>{german ? "ERSTE NOTIZ ERSTELLEN" : "CREATE FIRST NOTE"}</button></div>
         )}
@@ -682,6 +635,7 @@ export default function Home() {
   const caseTimeline = timeline.filter((event) => event.caseId === selectedCase);
   const currentReport = reports[selectedCase];
   const submitted = currentReport.submitted;
+  const currentSuspects = allSuspects[selectedCase] ?? createEmptySuspects(selectedCase);
   const reportSources: ReportSource[] = [
     ...caseNotes.filter((note) => note.text.trim()).map((note) => ({
       id: `note-${note.id}`,
@@ -697,6 +651,15 @@ export default function Home() {
       text: event.time.trim() ? `${event.time.trim()} — ${event.text}` : event.text,
       comment: event.comment,
     })),
+    ...Object.values(currentSuspects).flatMap((suspect) =>
+      suspect.evidence.filter((e) => e.text.trim()).map((e) => ({
+        id: `suspect-${suspect.id}-${e.id}`,
+        kind: "suspect" as const,
+        title: `${suspect.name} — ${e.type === "incriminating" ? "Incriminating" : "Exonerating"}`,
+        text: e.text,
+        comment: e.source ?? "",
+      }))
+    ),
   ];
   const germanCase = selectedCase === "timmy-two-shoes";
   const activeTitle = tabs.find((tab) => tab.key === activeTab)?.label ?? "Case file";
@@ -849,8 +812,6 @@ export default function Home() {
     window.getSelection()?.removeAllRanges();
   };
 
-  const currentSuspects = allSuspects[selectedCase] ?? createEmptySuspects(selectedCase);
-
   const flagToSuspect = (suspectId: string, type: "incriminating" | "exonerating") => {
     if (!suspectPicker) return;
     const suspects = allSuspects[selectedCase] ?? createEmptySuspects(selectedCase);
@@ -918,32 +879,32 @@ export default function Home() {
               <h1>Evidence Review Terminal</h1>
               <span>Authorized training access · Session active</span>
             </div>
-            <button className="folder-button" onClick={() => { sfxOpen(); setFolderOpen(true); }} aria-label="Open Case Files folder">
+            <button className="folder-button email-desktop-button" onClick={() => { sfxOpen(); setEmailOpen(true); }} aria-label="Open email">
+              <EmailIcon />
+              <span>E-MAIL</span>
+              {2 - readEmails.size > 0 && <b>{2 - readEmails.size}</b>}
+            </button>
+            <button className="folder-button files-desktop-button" onClick={() => { sfxOpen(); setFolderOpen(true); }} aria-label="Open Case Files folder">
               <FolderIcon />
               <span>CASE FILES</span>
             </button>
-            <button className="folder-button notes-desktop-button" onClick={() => { sfxOpen(); setNotesOpen(true); }} aria-label="Open Bones' Notes">
-              <NotepadIcon />
-              <span>BONES&apos; NOTES</span>
-              {caseNotes.length > 0 && <b>{caseNotes.length}</b>}
+            <button className="folder-button suspects-desktop-button" onClick={() => { sfxOpen(); setSuspectsOpen(true); }} aria-label="Open suspects board">
+              <SuspectIcon />
+              <span>SUSPECTS</span>
             </button>
             <button className="folder-button timeline-desktop-button" onClick={() => { sfxOpen(); setTimelineOpen(true); }} aria-label="Open case timeline">
               <TimelineIcon />
               <span>TIMELINE</span>
               {caseTimeline.length > 0 && <b>{caseTimeline.length}</b>}
             </button>
+            <button className="folder-button notes-desktop-button" onClick={() => { sfxOpen(); setNotesOpen(true); }} aria-label="Open Bones' Notes">
+              <NotepadIcon />
+              <span>BONES&apos; NOTES</span>
+              {caseNotes.length > 0 && <b>{caseNotes.length}</b>}
+            </button>
             <button className="folder-button report-desktop-button" onClick={() => { sfxOpen(); setSubmitOpen(true); }} aria-label="Open case report">
               <ReportIcon />
-              <span>CASE REPORT<br />ABSCHLUSSBERICHT</span>
-            </button>
-            <button className="folder-button email-desktop-button" onClick={() => { sfxOpen(); setEmailOpen(true); }} aria-label="Open email">
-              <EmailIcon />
-              <span>E-MAIL</span>
-              {2 - readEmails.size > 0 && <b>{2 - readEmails.size}</b>}
-            </button>
-            <button className="folder-button suspects-desktop-button" onClick={() => { sfxOpen(); setSuspectsOpen(true); }} aria-label="Open suspects board">
-              <SuspectIcon />
-              <span>SUSPECTS</span>
+              <span>FINAL REPORT<br />ABSCHLUSSBERICHT</span>
             </button>
             <div className="desktop-status"><span>2 cases assigned</span><span>Network: secure</span></div>
 

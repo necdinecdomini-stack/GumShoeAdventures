@@ -2,43 +2,26 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 
 export type ReportCaseId = "timmy-two-shoes" | "magyarosaurus";
-export type PoliceDecision = "" | "correct" | "incorrect" | "insufficient";
-export type ResponsibilityType = "" | "person-group" | "accident" | "unknown";
-
-export type EvidencePair = {
-  evidence: string;
-  explanation: string;
-};
 
 export type CaseReportData = {
   investigator: string;
-  policeDecision: PoliceDecision;
-  policeProblems: EvidencePair[];
-  responsibilityType: ResponsibilityType;
-  responsibleParty: string;
-  supportingEvidence: EvidencePair[];
+  body: string;
   submitted: boolean;
   submittedAt?: string;
 };
 
 export type ReportSource = {
   id: string;
-  kind: "note" | "highlight" | "timeline";
+  kind: "note" | "highlight" | "timeline" | "suspect";
   title: string;
   text: string;
   comment: string;
 };
 
-const emptyPair = (): EvidencePair => ({ evidence: "", explanation: "" });
-
 export function createEmptyReport(): CaseReportData {
   return {
     investigator: "",
-    policeDecision: "",
-    policeProblems: Array.from({ length: 5 }, emptyPair),
-    responsibilityType: "",
-    responsibleParty: "",
-    supportingEvidence: Array.from({ length: 5 }, emptyPair),
+    body: "",
     submitted: false,
   };
 }
@@ -48,31 +31,15 @@ const caseMeta = {
     code: "NPD-2026-1187",
     titleEn: "The Timmy Two-Shoes Restaurant Fire",
     titleDe: "Der Brand in Timmy Two-Shoes' Restaurant",
-    conclusionEn: "Salvatore Montenegro committed aggravated arson and insurance fraud.",
-    conclusionDe: "Salvatore Montenegro hat schwere Brandstiftung und Versicherungsbetrug begangen.",
     fileName: "NPD-2026-1187_Abschlussbericht.pdf",
   },
   "magyarosaurus": {
     code: "SID-2026-0002",
     titleEn: "The Missing Magyarosaurus",
     titleDe: "Der verschwundene Magyarosaurus",
-    conclusionEn: "Investigation ongoing — no person has been charged.",
-    conclusionDe: "Ermittlung läuft — keine Person wurde angeklagt.",
     fileName: "SID-2026-0002_CaseReport.pdf",
   },
 } satisfies Record<ReportCaseId, Record<string, string>>;
-
-const policeDecisionLabels: Record<Exclude<PoliceDecision, "">, string> = {
-  correct: "Correct / Richtig",
-  incorrect: "Incorrect / Falsch",
-  insufficient: "Not enough evidence / Nicht genügend Beweise",
-};
-
-const responsibilityLabels: Record<Exclude<ResponsibilityType, "">, string> = {
-  "person-group": "Person or group / Person oder Gruppe",
-  accident: "Accident / Unfall",
-  unknown: "Unknown / Unbekannt",
-};
 
 function DualLabel({ en, de }: { en: string; de: string }) {
   return <span className="dual-label"><b>{en}</b><small>{de}</small></span>;
@@ -113,25 +80,6 @@ async function createReportPdf(caseId: ReportCaseId, report: CaseReportData) {
     y += lines.length * lineHeight + gap;
   };
 
-  const section = (number: string, en: string, de: string) => {
-    ensure(15);
-    y += 3;
-    doc.setDrawColor(56, 91, 92);
-    doc.setLineWidth(0.45);
-    doc.line(margin, y, pageWidth - margin, y);
-    y += 6;
-    write(`${number}  ${en.toUpperCase()} / ${de.toUpperCase()}`, { size: 10, bold: true, color: [29, 78, 78], gap: 4 });
-  };
-
-  const pairBlock = (index: number, pair: EvidencePair, evidenceLabel: string, explanationLabel: string) => {
-    if (!pair.evidence.trim() && !pair.explanation.trim()) return;
-    ensure(18);
-    write(`${index + 1}. ${evidenceLabel}`, { size: 8, bold: true, color: [100, 111, 108], gap: 1.5 });
-    write(pair.evidence, { size: 10, gap: 2.5 });
-    write(explanationLabel, { size: 8, bold: true, color: [100, 111, 108], gap: 1.5 });
-    write(pair.explanation, { size: 10, gap: 5 });
-  };
-
   doc.setFillColor(7, 33, 40);
   doc.rect(0, 0, pageWidth, 42, "F");
   doc.setTextColor(196, 226, 221);
@@ -148,24 +96,23 @@ async function createReportPdf(caseId: ReportCaseId, report: CaseReportData) {
   write(meta.titleEn, { size: 16, bold: true, gap: 1.5 });
   write(meta.titleDe, { size: 11, color: [80, 96, 96], gap: 5 });
   write(`Investigator / Ermittler: ${report.investigator}`, { size: 10, gap: 1.5 });
-  write(`Submitted / Eingereicht: ${new Date(report.submittedAt ?? Date.now()).toLocaleString("de-DE")}`, { size: 9, color: [90, 101, 100], gap: 4 });
+  write(`Submitted / Eingereicht: ${new Date(report.submittedAt ?? Date.now()).toLocaleString("de-DE")}`, { size: 9, color: [90, 101, 100], gap: 6 });
 
-  section("1", "Police conclusion", "Schlussfolgerung der Polizei");
-  write(meta.conclusionEn, { size: 10, gap: 1.5 });
-  write(meta.conclusionDe, { size: 10, color: [83, 96, 95], gap: 3 });
-  write(`Assessment / Bewertung: ${report.policeDecision ? policeDecisionLabels[report.policeDecision] : "—"}`, { size: 10, bold: true, gap: 4 });
+  y += 2;
+  doc.setDrawColor(56, 91, 92);
+  doc.setLineWidth(0.45);
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 6;
+  write("REPORT / BERICHT", { size: 10, bold: true, color: [29, 78, 78], gap: 4 });
 
-  if (report.policeDecision !== "correct") {
-    section("2", "Problems with the police case", "Probleme mit der Polizeiermittlung");
-    report.policeProblems.forEach((pair, index) => pairBlock(index, pair, "Police claim or evidence / Behauptung oder Beweis der Polizei", "Why it is wrong, unreliable or insufficient / Warum ist dies falsch, unzuverlässig oder unzureichend?"));
+  const bodyLines = report.body.split("\n");
+  for (const line of bodyLines) {
+    if (line.trim()) {
+      write(line, { size: 10, gap: 3 });
+    } else {
+      y += 3;
+    }
   }
-
-  section("3", "Final determination", "Abschließende Beurteilung");
-  write(`Responsibility / Verantwortung: ${report.responsibilityType ? responsibilityLabels[report.responsibilityType] : "—"}`, { size: 10, bold: true, gap: 2 });
-  if (report.responsibilityType === "person-group") write(`Person or group / Person oder Gruppe: ${report.responsibleParty}`, { size: 10, gap: 4 });
-
-  section("4", "Supporting evidence", "Unterstützende Beweise");
-  report.supportingEvidence.forEach((pair, index) => pairBlock(index, pair, "Evidence / Beweis", "Why it supports the conclusion / Warum stützt dies die Schlussfolgerung?"));
 
   const pages = doc.getNumberOfPages();
   for (let page = 1; page <= pages; page += 1) {
@@ -182,59 +129,36 @@ async function createReportPdf(caseId: ReportCaseId, report: CaseReportData) {
   doc.save(meta.fileName);
 }
 
-function EvidenceRows({
-  rows,
-  section,
-  required,
-  onChange,
-  onPick,
-}: {
-  rows: EvidencePair[];
-  section: "police" | "support";
-  required: boolean;
-  onChange: (rows: EvidencePair[]) => void;
-  onPick: (index: number) => void;
-}) {
-  const update = (index: number, field: keyof EvidencePair, value: string) => {
-    onChange(rows.map((row, rowIndex) => rowIndex === index ? { ...row, [field]: value } : row));
+function SourcePicker({ sources, onChoose, onClose }: { sources: ReportSource[]; onChoose: (source: ReportSource) => void; onClose: () => void }) {
+  const [filter, setFilter] = useState<"all" | "note" | "highlight" | "timeline" | "suspect">("all");
+  const filtered = filter === "all" ? sources : sources.filter((s) => s.kind === filter);
+
+  const kindLabel = (kind: ReportSource["kind"]) => {
+    if (kind === "timeline") return "TIMELINE / ZEITLEISTE";
+    if (kind === "highlight") return "HIGHLIGHT / MARKIERUNG";
+    if (kind === "suspect") return "SUSPECT / VERDÄCHTIGE";
+    return "NOTE / NOTIZ";
   };
 
   return (
-    <div className="report-evidence-list">
-      {rows.map((row, index) => (
-        <article className="report-evidence-card" key={`${section}-${index}`}>
-          <div className="report-evidence-number">{index + 1}</div>
-          <div className="report-evidence-fields">
-            <label>
-              <DualLabel en={section === "police" ? "Police claim or evidence" : "Supporting evidence"} de={section === "police" ? "Behauptung oder Beweis der Polizei" : "Unterstützender Beweis"} />
-              <textarea value={row.evidence} onChange={(event) => update(index, "evidence", event.target.value)} rows={3} required={required && index === 0} placeholder={section === "police" ? "Copy or describe the police claim… / Behauptung oder Beweis eintragen…" : "Enter the evidence… / Beweis eintragen…"} />
-            </label>
-            <button type="button" className="insert-source-button" onClick={() => onPick(index)}>＋ INSERT FROM NOTES / AUS NOTIZEN EINFÜGEN</button>
-            <label>
-              <DualLabel en={section === "police" ? "Why is it wrong, unreliable or insufficient?" : "Why does this support your conclusion?"} de={section === "police" ? "Warum ist dies falsch, unzuverlässig oder unzureichend?" : "Warum stützt dies deine Schlussfolgerung?"} />
-              <textarea value={row.explanation} onChange={(event) => update(index, "explanation", event.target.value)} rows={3} required={required && index === 0} placeholder="Explain why… / Begründe warum…" />
-            </label>
-          </div>
-        </article>
-      ))}
-    </div>
-  );
-}
-
-function SourcePicker({ sources, onChoose, onClose }: { sources: ReportSource[]; onChoose: (source: ReportSource) => void; onClose: () => void }) {
-  return (
     <div className="report-source-shade" role="dialog" aria-modal="true" aria-labelledby="source-picker-title">
       <section className="report-source-picker">
-        <header><div><b id="source-picker-title">INSERT EVIDENCE</b><small>BEWEIS EINFÜGEN</small></div><button type="button" onClick={onClose} aria-label="Close evidence picker">×</button></header>
-        <p>Select a saved note, highlighted passage or timeline event. / Wähle eine Notiz, eine markierte Passage oder ein Ereignis aus der Zeitleiste.</p>
+        <header><div><b id="source-picker-title">INSERT MATERIAL</b><small>MATERIAL EINFÜGEN</small></div><button type="button" onClick={onClose} aria-label="Close evidence picker">×</button></header>
+        <div className="source-filter-bar">
+          {(["all", "note", "highlight", "timeline", "suspect"] as const).map((f) => (
+            <button key={f} type="button" className={filter === f ? "active" : ""} onClick={() => setFilter(f)}>
+              {f === "all" ? "ALL / ALLE" : f === "note" ? "NOTES" : f === "highlight" ? "HIGHLIGHTS" : f === "timeline" ? "TIMELINE" : "SUSPECTS"}
+            </button>
+          ))}
+        </div>
         <div className="report-source-list">
-          {!sources.length && <div className="report-source-empty">No saved material for this case. / Für diesen Fall gibt es noch keine gespeicherten Notizen.</div>}
-          {sources.map((source) => (
+          {!filtered.length && <div className="report-source-empty">No saved material for this case. / Für diesen Fall gibt es noch keine gespeicherten Notizen.</div>}
+          {filtered.map((source) => (
             <button type="button" key={source.id} onClick={() => onChoose(source)}>
-              <span>{source.kind === "timeline" ? "TIMELINE / ZEITLEISTE" : source.kind === "highlight" ? "HIGHLIGHT / MARKIERUNG" : "NOTE / NOTIZ"}</span>
+              <span>{kindLabel(source.kind)}</span>
               <b>{source.title}</b>
               <p>{source.text}</p>
-              <small>{source.comment.trim() ? source.comment : "No explanation yet — write it in the report. / Noch keine Erklärung — schreibe sie im Bericht."}</small>
+              {source.comment.trim() && <small>{source.comment}</small>}
               <i>INSERT / EINFÜGEN →</i>
             </button>
           ))}
@@ -263,25 +187,32 @@ export function CaseReportApp({
   onChange: (report: CaseReportData) => void;
   onClose: () => void;
 }) {
-  const [picker, setPicker] = useState<{ section: "police" | "support"; index: number } | null>(null);
+  const [picker, setPicker] = useState(false);
   const [status, setStatus] = useState("");
   const meta = caseMeta[caseId];
+  const bodyRef = useState<HTMLTextAreaElement | null>(null);
 
   const change = (patch: Partial<CaseReportData>) => {
     onChange({ ...report, ...patch, submitted: false, submittedAt: undefined });
     setStatus("");
   };
 
-  const chooseSource = (source: ReportSource) => {
-    if (!picker) return;
-    const key = picker.section === "police" ? "policeProblems" : "supportingEvidence";
-    const rows = report[key].map((row, index) => index === picker.index ? {
-      ...row,
-      evidence: source.text,
-      explanation: row.explanation.trim() ? row.explanation : source.comment.trim(),
-    } : row);
-    change({ [key]: rows });
-    setPicker(null);
+  const insertSource = (source: ReportSource) => {
+    const insertion = source.comment.trim()
+      ? `[${source.title}] ${source.text}\n→ ${source.comment}\n`
+      : `[${source.title}] ${source.text}\n`;
+    const textarea = bodyRef[0];
+    if (textarea) {
+      const start = textarea.selectionStart ?? report.body.length;
+      const before = report.body.slice(0, start);
+      const after = report.body.slice(start);
+      const needsNewline = before.length > 0 && !before.endsWith("\n") ? "\n" : "";
+      change({ body: before + needsNewline + insertion + after });
+    } else {
+      const needsNewline = report.body.length > 0 && !report.body.endsWith("\n") ? "\n" : "";
+      change({ body: report.body + needsNewline + insertion });
+    }
+    setPicker(false);
   };
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
@@ -298,6 +229,8 @@ export function CaseReportApp({
     }
   };
 
+  const wordCount = report.body.trim() ? report.body.trim().split(/\s+/).length : 0;
+
   return (
     <section className="case-report-app" role="dialog" aria-modal="true" aria-labelledby="case-report-title">
       <header className="case-report-bar"><div><ReportIcon small /><span><b id="case-report-title">CASE REPORT</b><small>ABSCHLUSSBERICHT</small></span></div><button type="button" onClick={onClose} aria-label="Close case report">×</button></header>
@@ -312,40 +245,23 @@ export function CaseReportApp({
             <div><DualLabel en="Documents reviewed" de="Gelesene Dokumente" /><strong>{reviewed} / {total}</strong></div>
           </section>
 
-          <section className="report-section">
-            <header><span>01</span><div><h2>Police conclusion</h2><p>Schlussfolgerung der Polizei</p></div></header>
-            <div className="police-conclusion"><p>{meta.conclusionEn}</p><span>{meta.conclusionDe}</span></div>
-            <fieldset className="report-choice-grid">
-              <legend><DualLabel en="Was the police conclusion correct?" de="War die Schlussfolgerung der Polizei richtig?" /></legend>
-              {(["correct", "incorrect", "insufficient"] as const).map((value) => (
-                <label key={value} className={report.policeDecision === value ? "selected" : ""}><input type="radio" name="police-decision" checked={report.policeDecision === value} onChange={() => change({ policeDecision: value })} required /><span>{policeDecisionLabels[value]}</span></label>
-              ))}
-            </fieldset>
-          </section>
-
-          {(report.policeDecision === "incorrect" || report.policeDecision === "insufficient") && (
-            <section className="report-section">
-              <header><span>02</span><div><h2>Problems with the police case</h2><p>Probleme mit der Polizeiermittlung</p></div></header>
-              <p className="report-instruction">Identify up to five specific problems. Explain each one in your own words. / Nenne bis zu fünf konkrete Probleme und erkläre jedes mit deinen eigenen Worten.</p>
-              <EvidenceRows rows={report.policeProblems} section="police" required onChange={(policeProblems) => change({ policeProblems })} onPick={(index) => setPicker({ section: "police", index })} />
-            </section>
-          )}
-
-          <section className="report-section">
-            <header><span>03</span><div><h2>Final determination</h2><p>Abschließende Beurteilung</p></div></header>
-            <fieldset className="report-choice-grid responsibility-grid">
-              <legend><DualLabel en="Who or what was responsible?" de="Wer oder was war verantwortlich?" /></legend>
-              {(["person-group", "accident", "unknown"] as const).map((value) => (
-                <label key={value} className={report.responsibilityType === value ? "selected" : ""}><input type="radio" name="responsibility" checked={report.responsibilityType === value} onChange={() => change({ responsibilityType: value })} required /><span>{responsibilityLabels[value]}</span></label>
-              ))}
-            </fieldset>
-            {report.responsibilityType === "person-group" && <label className="responsible-party-field"><DualLabel en="Responsible person or group" de="Verantwortliche Person oder Gruppe" /><input value={report.responsibleParty} onChange={(event) => change({ responsibleParty: event.target.value })} required placeholder="Name of person or group / Name der Person oder Gruppe" /></label>}
-          </section>
-
-          <section className="report-section">
-            <header><span>04</span><div><h2>Supporting evidence</h2><p>Unterstützende Beweise</p></div></header>
-            <p className="report-instruction">Give up to five pieces of evidence supporting your conclusion. / Nenne bis zu fünf Beweise, die deine Schlussfolgerung stützen.</p>
-            <EvidenceRows rows={report.supportingEvidence} section="support" required onChange={(supportingEvidence) => change({ supportingEvidence })} onPick={(index) => setPicker({ section: "support", index })} />
+          <section className="report-body-section">
+            <header><span>01</span><div><h2>Your report</h2><p>Dein Bericht</p></div></header>
+            <p className="report-instruction">Write your findings. Use evidence from the case files to support your conclusions. You can insert material from your notes, timeline, and suspects board using the button below. / Schreibe deine Erkenntnisse. Verwende Beweise aus den Fallakten, um deine Schlussfolgerungen zu stützen.</p>
+            <div className="report-body-controls">
+              <button type="button" className="insert-source-button" onClick={() => setPicker(true)}>＋ INSERT FROM NOTES · TIMELINE · SUSPECTS / AUS NOTIZEN · ZEITLEISTE · VERDÄCHTIGE EINFÜGEN</button>
+              <span className="report-word-count">{wordCount} {wordCount === 1 ? "word / Wort" : "words / Wörter"}</span>
+            </div>
+            <textarea
+              className="report-body-textarea"
+              ref={(el) => { bodyRef[0] = el; }}
+              value={report.body}
+              onChange={(event) => change({ body: event.target.value })}
+              rows={18}
+              required
+              minLength={40}
+              placeholder={"Write your case report here…\n\nConsider:\n- What happened?\n- Who is responsible and why?\n- What evidence supports your conclusion?\n- Were there problems with the police investigation?\n\n---\n\nSchreibe deinen Fallbericht hier…\n\nBedenke:\n- Was ist passiert?\n- Wer ist verantwortlich und warum?\n- Welche Beweise stützen deine Schlussfolgerung?\n- Gab es Probleme bei der Polizeiermittlung?"}
+            />
           </section>
 
           <footer className="report-submit-footer">
@@ -354,7 +270,7 @@ export function CaseReportApp({
           </footer>
         </form>
       </div>
-      {picker && <SourcePicker sources={sources} onChoose={chooseSource} onClose={() => setPicker(null)} />}
+      {picker && <SourcePicker sources={sources} onChoose={insertSource} onClose={() => setPicker(false)} />}
     </section>
   );
 }
