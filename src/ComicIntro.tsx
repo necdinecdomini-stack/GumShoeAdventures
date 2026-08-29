@@ -54,7 +54,7 @@ function useAssetLoader() {
   return { loaded, ready, total: TOTAL_ASSETS };
 }
 
-export default function ComicIntro({ onComplete }: { onComplete: () => void }) {
+export default function ComicIntro({ onComplete }: { onComplete: (language: "en" | "de") => void }) {
   const { loaded, ready, total } = useAssetLoader();
   const [phase, setPhase] = useState<Phase>("loading");
   const [page, setPage] = useState(0);
@@ -63,6 +63,7 @@ export default function ComicIntro({ onComplete }: { onComplete: () => void }) {
   const viewerRef = useRef<HTMLDivElement>(null);
   const pageSfxHandles = useRef<SfxHandle[]>([]);
   const ragtime = useRef<SfxHandle | null>(null);
+  const chosenLang = useRef<"en" | "de">("en");
 
   useEffect(() => {
     if (ready && phase === "loading") {
@@ -119,7 +120,7 @@ export default function ComicIntro({ onComplete }: { onComplete: () => void }) {
     ragtime.current?.fadeOut(3);
     ragtime.current = null;
     stopMusic();
-    setTimeout(onComplete, 1000);
+    setTimeout(() => onComplete(chosenLang.current), 1000);
   }, [onComplete, phase]);
 
   const nextPage = useCallback(() => {
@@ -193,10 +194,10 @@ export default function ComicIntro({ onComplete }: { onComplete: () => void }) {
             <span className="sub">Sonderermittlungen</span>
           </div>
           <div className="lang-buttons">
-            <button className="lang-btn" onClick={startComic}>
+            <button className="lang-btn" onClick={() => { chosenLang.current = "en"; startComic(); }}>
               English
             </button>
-            <button className="lang-btn" onClick={startComic}>
+            <button className="lang-btn" onClick={() => { chosenLang.current = "de"; startComic(); }}>
               Deutsch
             </button>
           </div>

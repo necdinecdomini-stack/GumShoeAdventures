@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { timmyQuestions, timmyReports } from "./timmy-data";
 import { magyarReports } from "./magyarosaurus-data";
+import { magyarReportsDe } from "./magyarosaurus-data-de";
 import { CaseReportApp, ReportIcon, createEmptyReport } from "./case-report";
 import type { CaseReportData, ReportCaseId, ReportSource } from "./case-report";
 import ComicIntro from "./ComicIntro";
@@ -61,11 +62,11 @@ const timmyTabs: { key: TabKey; label: string; code: string }[] = [
   { key: "timmy_task", label: "Ermittlungsauftrag", code: "08" },
 ];
 
-const magyarTabs: { key: TabKey; label: string; code: string }[] = [
-  ...magyarReports.map((report) => ({ key: report.key as TabKey, label: report.label, code: report.code })),
-];
+const magyarTabsEn: { key: TabKey; label: string; code: string }[] =
+  magyarReports.map((report) => ({ key: report.key as TabKey, label: report.label, code: report.code }));
 
-const tabs = [...timmyTabs, ...magyarTabs];
+const magyarTabsDe: { key: TabKey; label: string; code: string }[] =
+  magyarReportsDe.map((report) => ({ key: report.key as TabKey, label: report.label, code: report.code }));
 
 const firstTabForCase: Record<CaseId, TabKey> = {
   "timmy-two-shoes": "timmy_police",
@@ -143,8 +144,9 @@ function TimmyReportTab({ reportKey }: { reportKey: TabKey }) {
   );
 }
 
-function MagyarReportTab({ reportKey }: { reportKey: TabKey }) {
-  const report = magyarReports.find((item) => item.key === reportKey);
+function MagyarReportTab({ reportKey, lang }: { reportKey: TabKey; lang: "en" | "de" }) {
+  const reports = lang === "de" ? magyarReportsDe : magyarReports;
+  const report = reports.find((item) => item.key === reportKey);
   if (!report) return null;
   return (
     <article className="document-page">
@@ -456,6 +458,7 @@ function NotesBoard({
 
 export default function Home() {
   const [view, setView] = useState<"intro" | "map" | "terminal" | LocationId>("intro");
+  const [language, setLanguage] = useState<"en" | "de">("en");
   const [muted, setMuted] = useState(isMuted());
   const [folderOpen, setFolderOpen] = useState(false);
   const [caseOpen, setCaseOpen] = useState(false);
@@ -594,7 +597,7 @@ export default function Home() {
   }, [view]);
 
   if (view === "intro") {
-    return <ComicIntro onComplete={() => setView("terminal")} />;
+    return <ComicIntro onComplete={(lang) => { setLanguage(lang); setView("terminal"); }} />;
   }
 
   if (view === "map") {
@@ -629,6 +632,8 @@ export default function Home() {
     setVisited((current) => new Set([...current, key]));
   };
 
+  const magyarTabs = language === "de" ? magyarTabsDe : magyarTabsEn;
+  const allTabs = [...timmyTabs, ...magyarTabs];
   const currentTabs = selectedCase === "magyarosaurus" ? magyarTabs : timmyTabs;
   const currentVisited = currentTabs.filter((tab) => visited.has(tab.key)).length;
   const caseNotes = notes.filter((note) => (note.caseId ?? "timmy-two-shoes") === selectedCase);
@@ -661,8 +666,8 @@ export default function Home() {
       }))
     ),
   ];
-  const germanCase = selectedCase === "timmy-two-shoes";
-  const activeTitle = tabs.find((tab) => tab.key === activeTab)?.label ?? "Case file";
+  const germanCase = selectedCase === "timmy-two-shoes" || (selectedCase === "magyarosaurus" && language === "de");
+  const activeTitle = allTabs.find((tab) => tab.key === activeTab)?.label ?? "Case file";
 
   const openCase = (caseId: CaseId) => {
     setSelectedCase(caseId);
@@ -755,7 +760,7 @@ export default function Home() {
       color: noteColors[current.length % noteColors.length],
       caseId: selectedCase,
       sourceTab: selectionDraft.tab,
-      sourceTitle: tabs.find((tab) => tab.key === selectionDraft.tab)?.label ?? "Case file",
+      sourceTitle: allTabs.find((tab) => tab.key === selectionDraft.tab)?.label ?? "Case file",
       sourceBlock: selectionDraft.block,
       start: selectionDraft.start,
       end: selectionDraft.end,
@@ -804,7 +809,7 @@ export default function Home() {
       time: "",
       comment: "",
       sourceTab: selectionDraft.tab,
-      sourceTitle: tabs.find((tab) => tab.key === selectionDraft.tab)?.label ?? "Case file",
+      sourceTitle: allTabs.find((tab) => tab.key === selectionDraft.tab)?.label ?? "Case file",
       sourceBlock: selectionDraft.block,
     }]);
     setSelectionDraft(null);
@@ -914,9 +919,9 @@ export default function Home() {
                 <div className="window-toolbar"><span>ACTIVE INVESTIGATIONS</span><span>2 ITEMS</span></div>
                 <div className="file-list">
                   <button className="case-file" onClick={() => openCase("magyarosaurus")}>
-                    <span className="paper-file" aria-hidden="true">MDC</span>
-                    <span><strong>The Missing Magyarosaurus</strong><small>Case SID-2026-0002 · English · 11 Documents</small></span>
-                    <b aria-hidden="true">OPEN →</b>
+                    <span className={language === "de" ? "paper-file german-file" : "paper-file"} aria-hidden="true">MDC</span>
+                    <span><strong>{language === "de" ? "Der verschwundene Magyarosaurus" : "The Missing Magyarosaurus"}</strong><small>{language === "de" ? "Aktenzeichen SID-2026-0002 · Deutsch · 11 Dokumente" : "Case SID-2026-0002 · English · 11 Documents"}</small></span>
+                    <b aria-hidden="true">{language === "de" ? "ÖFFNEN →" : "OPEN →"}</b>
                   </button>
                   <button className="case-file" onClick={() => openCase("timmy-two-shoes")}>
                     <span className="paper-file german-file" aria-hidden="true">TTS</span>
@@ -994,7 +999,7 @@ export default function Home() {
           <div className="case-reader">
             <header className="case-reader-titlebar"><span><FolderIcon small />CASE FILES</span><button onClick={() => { sfxClose(); setCaseOpen(false); }} aria-label="Close case files">×</button></header>
             <aside className="case-sidebar">
-              <div className="case-id-block"><span>{germanCase ? "AKTIVER FALL" : "ACTIVE CASE"}</span><strong>{selectedCase === "magyarosaurus" ? "MDC" : "TTS"}</strong><p>{selectedCase === "magyarosaurus" ? "The Missing Magyarosaurus" : "Der Brand in Timmy Two-Shoes' Restaurant"}</p></div>
+              <div className="case-id-block"><span>{germanCase ? "AKTIVER FALL" : "ACTIVE CASE"}</span><strong>{selectedCase === "magyarosaurus" ? "MDC" : "TTS"}</strong><p>{selectedCase === "magyarosaurus" ? (language === "de" ? "Der verschwundene Magyarosaurus" : "The Missing Magyarosaurus") : "Der Brand in Timmy Two-Shoes' Restaurant"}</p></div>
               <nav aria-label="Case documents">
                 {currentTabs.map((tab) => (
                   <button key={tab.key} className={activeTab === tab.key ? "active" : ""} onClick={() => openTab(tab.key)}>
@@ -1015,7 +1020,7 @@ export default function Home() {
               <div className="document-scroll" onMouseUp={captureSelection} onTouchEnd={() => window.setTimeout(captureSelection, 0)}>
                 {activeTab.startsWith("timmy_") && activeTab !== "timmy_task" && <TimmyReportTab reportKey={activeTab} />}
                 {activeTab === "timmy_task" && <TimmyTaskTab onSubmit={() => setSubmitOpen(true)} />}
-                {activeTab.startsWith("magyar_") && <MagyarReportTab reportKey={activeTab} />}
+                {activeTab.startsWith("magyar_") && <MagyarReportTab reportKey={activeTab} lang={language} />}
               </div>
             </section>
           </div>
@@ -1023,7 +1028,7 @@ export default function Home() {
         </HighlightsContext.Provider>
         {selectionDraft && (
           <div className="selection-tool" style={{ left: selectionDraft.x, top: selectionDraft.y }}>
-            <button onClick={flagSelection}>⚑ {germanCase ? "ZU NOTIZEN" : "FLAG TO NOTES"}</button><button onClick={addSelectionToTimeline}>≡ {germanCase ? "ZUR ZEITLEISTE" : "ADD TO TIMELINE"}</button><button className="suspect-flag-btn" onClick={() => { setSuspectPicker({ text: selectionDraft.text, tab: selectionDraft.tab, source: tabs.find((t) => t.key === selectionDraft.tab)?.label ?? "Case file", x: selectionDraft.x, y: selectionDraft.y + 40 }); }}>⊕ {germanCase ? "VERDÄCHTIGEM" : "TO SUSPECT"}</button><button onClick={() => { setSelectionDraft(null); window.getSelection()?.removeAllRanges(); }} aria-label="Dismiss selection tool">×</button>
+            <button onClick={flagSelection}>⚑ {germanCase ? "ZU NOTIZEN" : "FLAG TO NOTES"}</button><button onClick={addSelectionToTimeline}>≡ {germanCase ? "ZUR ZEITLEISTE" : "ADD TO TIMELINE"}</button><button className="suspect-flag-btn" onClick={() => { setSuspectPicker({ text: selectionDraft.text, tab: selectionDraft.tab, source: allTabs.find((t) => t.key === selectionDraft.tab)?.label ?? "Case file", x: selectionDraft.x, y: selectionDraft.y + 40 }); }}>⊕ {germanCase ? "VERDÄCHTIGEM" : "TO SUSPECT"}</button><button onClick={() => { setSelectionDraft(null); window.getSelection()?.removeAllRanges(); }} aria-label="Dismiss selection tool">×</button>
           </div>
         )}
         {noteToast && <div className="note-toast" role="status">{noteToast}</div>}
