@@ -12,6 +12,7 @@ import type { CaseSuspects, SuspectEvidence } from "./SuspectsBoard";
 import { toggleMute, isMuted, sfxClick, sfxOpen, sfxClose } from "./lib/audio";
 import { HighlightsContext } from "./HighlightedText";
 import { FolderIcon, SaveIcon, NotepadIcon, TimelineIcon, EmailIcon } from "./Icons";
+import Journal, { JournalIcon } from "./Journal";
 import { TimmyReportTab, MagyarReportTab, TimmyTaskTab } from "./ReportTabs";
 import TimelineBoard from "./TimelineBoard";
 import NotesBoard from "./NotesBoard";
@@ -70,6 +71,7 @@ export default function Home() {
   }));
   const [suspectsLoaded, setSuspectsLoaded] = useState(false);
   const [suspectPicker, setSuspectPicker] = useState<{ text: string; tab: TabKey; source: string; x: number; y: number } | null>(null);
+  const [journalOpen, setJournalOpen] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
   const [saveSlots, setSaveSlots] = useState<(SaveSlot | null)[]>(() => loadAllSaves());
   const [saveToast, setSaveToast] = useState("");
@@ -612,6 +614,10 @@ export default function Home() {
               <ReportIcon />
               <span>FINAL REPORT<br />ABSCHLUSSBERICHT</span>
             </button>
+            <button className="folder-button journal-desktop-button" onClick={() => { sfxOpen(); setJournalOpen(true); }} aria-label="Open Bones' Journal">
+              <JournalIcon />
+              <span>BONES&apos; JOURNAL</span>
+            </button>
             <button className="folder-button save-desktop-button" onClick={() => { sfxOpen(); setSaveOpen(true); }} aria-label="Save or load game">
               <SaveIcon />
               <span>SAVE / LOAD</span>
@@ -776,6 +782,7 @@ export default function Home() {
         {timelineOpen && <TimelineBoard events={caseTimeline} german={germanCase} onAdd={addBlankTimelineEvent} onUpdate={updateTimelineEvent} onDelete={(id) => setTimeline((current) => current.filter((event) => event.id !== id))} onMove={moveTimelineEvent} onOpenSource={openTimelineSource} onClose={() => setTimelineOpen(false)} />}
         {suspectsOpen && <SuspectsBoard suspects={currentSuspects} german={germanCase} onUpdate={(updated) => setAllSuspects((current) => ({ ...current, [selectedCase]: updated }))} onClose={() => setSuspectsOpen(false)} />}
         {submitOpen && <CaseReportApp caseId={selectedCase} report={currentReport} sources={reportSources} reviewed={currentVisited} total={currentTabs.length} onCaseChange={setSelectedCase} onChange={(report) => setReports((current) => ({ ...current, [selectedCase]: report }))} onClose={() => setSubmitOpen(false)} />}
+        {journalOpen && <Journal onClose={() => { sfxClose(); setJournalOpen(false); }} />}
       </section>
     </main>
   );
