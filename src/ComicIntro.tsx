@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { initAudio, startMusic, stopMusic, sfxClick, sfxPageTurn, sfxWhoosh, playSfxFile } from "./lib/audio";
 import type { SfxHandle } from "./lib/audio";
+import type { Difficulty } from "./types";
 
 const PAGES = Array.from({ length: 18 }, (_, i) => {
   const n = String(i + 1).padStart(2, "0");
@@ -18,7 +19,7 @@ const AUDIO_FILES = [
 
 const TOTAL_ASSETS = PAGES.length + AUDIO_FILES.length;
 
-type Phase = "loading" | "splash" | "comic" | "done";
+type Phase = "loading" | "splash" | "comic" | "difficulty" | "done";
 
 function useAssetLoader() {
   const [loaded, setLoaded] = useState(0);
@@ -54,7 +55,7 @@ function useAssetLoader() {
   return { loaded, ready, total: TOTAL_ASSETS };
 }
 
-export default function ComicIntro({ onComplete }: { onComplete: (language: "en" | "de") => void }) {
+export default function ComicIntro({ onComplete }: { onComplete: (language: "en" | "de", difficulty: Difficulty) => void }) {
   const { loaded, ready, total } = useAssetLoader();
   const [phase, setPhase] = useState<Phase>("loading");
   const [page, setPage] = useState(0);
@@ -113,15 +114,24 @@ export default function ComicIntro({ onComplete }: { onComplete: (language: "en"
   }, []);
 
   const endIntro = useCallback(() => {
-    if (phase === "done") return;
-    setPhase("done");
+    if (phase === "done" || phase === "difficulty") return;
     setFading(true);
     stopPageSfx();
     ragtime.current?.fadeOut(3);
     ragtime.current = null;
     stopMusic();
-    setTimeout(() => onComplete(chosenLang.current), 1000);
-  }, [onComplete, phase]);
+    setTimeout(() => {
+      setPhase("difficulty");
+      setFading(false);
+    }, 800);
+  }, [phase]);
+
+  const selectDifficulty = useCallback((diff: Difficulty) => {
+    sfxClick();
+    setPhase("done");
+    setFading(true);
+    setTimeout(() => onComplete(chosenLang.current, diff), 1000);
+  }, [onComplete]);
 
   const nextPage = useCallback(() => {
     if (transitioning.current) return;
@@ -238,6 +248,33 @@ export default function ComicIntro({ onComplete }: { onComplete: (language: "en"
           {page < 3 && (
             <span className="click-hint">Click to continue</span>
           )}
+        </div>
+      )}
+
+      {phase === "difficulty" && (
+        <div className="difficulty-screen">
+          <div className="difficulty-header">
+            <span className="eyebrow">Select Your Rank</span>
+            <h1>{chosenLang.current === "de" ? "Schwierigkeitsgrad" : "Difficulty"}</h1>
+            <p>{chosenLang.current === "de" ? "Wähle deinen Rang für diese Ermittlung." : "Choose your rank for this investigation."}</p>
+          </div>
+          <div className="difficulty-cards">
+            <button className="difficulty-card gumshoe" onClick={() => selectDifficulty("gumshoe")}>
+              <span className="difficulty-rank">{chosenLang.current === "de" ? "Schnüffler" : "Gumshoe"}</span>
+              <span className="difficulty-level">{chosenLang.current === "de" ? "Leicht" : "Easy"}</span>
+              <p>{chosenLang.current === "de" ? "Vereinfachte Berichte. Geleitete Fragen. Ideal für den Einstieg." : "Simplified reports. Guided questions. Ideal for beginners."}</p>
+            </button>
+            <button className="difficulty-card officer" onClick={() => selectDifficulty("officer")}>
+              <span className="difficulty-rank">Officer</span>
+              <span className="difficulty-level">{chosenLang.current === "de" ? "Mittel" : "Medium"}</span>
+              <p>{chosenLang.current === "de" ? "Vollständige Berichte. Offene Fragen. Die Standard-Ermittlung." : "Full reports. Open questions. The standard investigation."}</p>
+            </button>
+            <button className="difficulty-card lead-investigator" onClick={() => selectDifficulty("lead-investigator")}>
+              <span className="difficulty-rank">{chosenLang.current === "de" ? "Leitender Ermittler" : "Lead Investigator"}</span>
+              <span className="difficulty-level">{chosenLang.current === "de" ? "Schwer" : "Hard"}</span>
+              <p>{chosenLang.current === "de" ? "Komplexe Berichte. Weniger Hinweise. Für erfahrene Ermittler." : "Complex reports. Fewer hints. For experienced investigators."}</p>
+            </button>
+          </div>
         </div>
       )}
     </div>

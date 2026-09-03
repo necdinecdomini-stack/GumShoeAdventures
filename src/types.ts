@@ -5,6 +5,7 @@ export type CaseId = ReportCaseId;
 export type TimmyTabKey = "timmy_police" | "timmy_fire" | "timmy_insurance" | "timmy_sal" | "timmy_bianchi" | "timmy_agnes" | "timmy_tony" | "timmy_task";
 export type MagyarTabKey = "magyar_police" | "magyar_security" | "magyar_acquisition" | "magyar_tachkis" | "magyar_green" | "magyar_lectures" | "magyar_jameson" | "magyar_personnel" | "magyar_voss" | "magyar_grissom" | "magyar_beggar";
 export type TabKey = TimmyTabKey | MagyarTabKey;
+export type Difficulty = "gumshoe" | "officer" | "lead-investigator";
 export type NoteColor = "amber" | "blue" | "green" | "rose";
 
 export type CaseNote = {
@@ -50,6 +51,7 @@ export type SaveSlot = {
   name: string;
   savedAt: string;
   language: "en" | "de";
+  difficulty: Difficulty;
   selectedCase: CaseId;
   activeTab: TabKey;
   visited: TabKey[];

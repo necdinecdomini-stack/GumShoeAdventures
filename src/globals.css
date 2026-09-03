@@ -126,6 +126,7 @@ button { font: inherit; }
 .report-icon-small i { left: 4px; right: 4px; }
 .report-icon-small i:nth-child(1) { top: 15px; }.report-icon-small i:nth-child(2) { top: 20px; }.report-icon-small i:nth-child(3) { top: 25px; }
 .desktop-status { position: absolute; left: 1rem; right: 1rem; bottom: .8rem; display: flex; justify-content: space-between; color: #64817d; font: .68rem "Courier New", monospace; text-transform: uppercase; }
+.rank-badge { color: #e6ae4f; }
 
 .file-window { position: absolute; z-index: 4; top: 16%; left: 50%; transform: translateX(-50%); width: min(760px, 88%); min-height: 360px; border: 1px solid #547077; background: #0c2229; box-shadow: 0 30px 80px rgba(0,0,0,.55); }
 .window-titlebar { height: 44px; display: flex; align-items: center; justify-content: space-between; padding-left: 1rem; background: #d8ded9; color: #122128; font: 800 .75rem "Courier New", monospace; }

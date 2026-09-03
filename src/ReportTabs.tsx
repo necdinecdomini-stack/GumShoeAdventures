@@ -1,11 +1,13 @@
-import { timmyQuestions, timmyReports } from "./timmy-data";
-import { magyarReports } from "./magyarosaurus-data";
-import { magyarReportsDe } from "./magyarosaurus-data-de";
+import { timmyReportsByDifficulty, timmyQuestionsByDifficulty } from "./timmy-data";
+import { magyarReportsByDifficulty } from "./magyarosaurus-data";
+import { magyarReportsDeByDifficulty } from "./magyarosaurus-data-de";
+import { getForDifficulty } from "./difficulty";
 import { EvidenceParagraph } from "./HighlightedText";
-import type { TabKey } from "./types";
+import type { Difficulty, TabKey } from "./types";
 
-export function TimmyReportTab({ reportKey }: { reportKey: TabKey }) {
-  const report = timmyReports.find((item) => item.key === reportKey);
+export function TimmyReportTab({ reportKey, difficulty }: { reportKey: TabKey; difficulty: Difficulty }) {
+  const reports = getForDifficulty(timmyReportsByDifficulty, difficulty);
+  const report = reports.find((item) => item.key === reportKey);
   if (!report) return null;
   return (
     <article className="document-page german-document">
@@ -38,8 +40,10 @@ export function TimmyReportTab({ reportKey }: { reportKey: TabKey }) {
   );
 }
 
-export function MagyarReportTab({ reportKey, lang }: { reportKey: TabKey; lang: "en" | "de" }) {
-  const reports = lang === "de" ? magyarReportsDe : magyarReports;
+export function MagyarReportTab({ reportKey, lang, difficulty }: { reportKey: TabKey; lang: "en" | "de"; difficulty: Difficulty }) {
+  const reports = lang === "de"
+    ? getForDifficulty(magyarReportsDeByDifficulty, difficulty)
+    : getForDifficulty(magyarReportsByDifficulty, difficulty);
   const report = reports.find((item) => item.key === reportKey);
   if (!report) return null;
   return (
@@ -73,7 +77,8 @@ export function MagyarReportTab({ reportKey, lang }: { reportKey: TabKey; lang: 
   );
 }
 
-export function TimmyTaskTab({ onSubmit }: { onSubmit: () => void }) {
+export function TimmyTaskTab({ onSubmit, difficulty }: { onSubmit: () => void; difficulty: Difficulty }) {
+  const questions = getForDifficulty(timmyQuestionsByDifficulty, difficulty);
   return (
     <article className="document-page german-document">
       <header className="document-heading">
@@ -83,7 +88,7 @@ export function TimmyTaskTab({ onSubmit }: { onSubmit: () => void }) {
       </header>
       <EvidenceParagraph id="timmy-task-intro" className="task-note">Lies alle sieben Berichte. Ordne die Ereignisse auf der Zeitleiste und vergleiche die Aussagen. Entscheide dann, wer das Restaurant wahrscheinlich angezündet hat. Eine verdächtige Person ist nicht automatisch der Täter.</EvidenceParagraph>
       <div className="suspect-strip"><span>NIEMAND — UNFALL</span><span>SAL MONTENEGRO</span><span>TIMMY BIANCHI</span><span>DIE MAFIA</span></div>
-      <ol className="task-list">{timmyQuestions.map((question, index) => <li key={question}><span>{String(index + 1).padStart(2, "0")}</span><EvidenceParagraph id={`timmy-question-${index}`}>{question}</EvidenceParagraph></li>)}</ol>
+      <ol className="task-list">{questions.map((question, index) => <li key={question}><span>{String(index + 1).padStart(2, "0")}</span><EvidenceParagraph id={`timmy-question-${index}`}>{question}</EvidenceParagraph></li>)}</ol>
       <div className="task-submit-panel">
         <div><span>LETZTER SCHRITT</span><strong>Bereit, den Fall abzuschließen?</strong><p>Gib dein Urteil ab und erkläre, welche Hinweise es stützen.</p></div>
         <button onClick={onSubmit}>FALL EINREICHEN →</button>

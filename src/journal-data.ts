@@ -1,3 +1,5 @@
+import type { Difficulty } from "./types";
+
 export interface JournalParagraph {
   text: string;
   type?: "quote";
@@ -179,3 +181,9 @@ export const journalEntries: JournalEntry[] = [
     ],
   },
 ];
+
+export const journalEntriesByDifficulty: Record<Difficulty, JournalEntry[]> = {
+  "gumshoe": journalEntries,
+  "officer": journalEntries,
+  "lead-investigator": journalEntries,
+};

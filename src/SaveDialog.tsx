@@ -57,7 +57,7 @@ export default function SaveDialog({
           <div key={i} className={`save-slot${slot ? " occupied" : ""}`}>
             <div className="save-slot-info">
               <strong>{slot ? slot.name : `Slot ${i + 1} — empty`}</strong>
-              {slot && <small>{new Date(slot.savedAt).toLocaleString()} · {slot.notes.length} notes · {slot.timeline.length} events</small>}
+              {slot && <small>{new Date(slot.savedAt).toLocaleString()} · {(slot.difficulty ?? "officer").replace("-", " ")} · {slot.notes.length} notes · {slot.timeline.length} events</small>}
             </div>
             <div className="save-slot-actions">
               {confirmOverwrite === i ? (

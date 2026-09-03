@@ -1,3 +1,5 @@
+import type { Difficulty } from "./types";
+
 export type MagyarExchange = {
   speaker: string;
   text: string;
@@ -406,3 +408,9 @@ export const magyarReports: MagyarReport[] = [
     stamp: "MAGYAROSAURUS / REPORT 11",
   },
 ];
+
+export const magyarReportsByDifficulty: Record<Difficulty, MagyarReport[]> = {
+  "gumshoe": magyarReports,
+  "officer": magyarReports,
+  "lead-investigator": magyarReports,
+};

@@ -1,3 +1,5 @@
+import type { Difficulty } from "./types";
+
 export type TimmyExchange = {
   speaker: string;
   text: string;
@@ -307,3 +309,15 @@ export const timmyQuestions = [
   "Agnes hörte, wie Timmy nach dem Brand einen Witz über das Versicherungsgeld machte. Ist das verdächtig? Begründe deine Antwort.",
   "Schreibe dein Urteil in 120–180 Wörtern. Wer hat das Restaurant wahrscheinlich angezündet, und warum? Benutze mindestens vier konkrete Hinweise aus den Berichten.",
 ];
+
+export const timmyReportsByDifficulty: Record<Difficulty, TimmyReport[]> = {
+  "gumshoe": timmyReports,
+  "officer": timmyReports,
+  "lead-investigator": timmyReports,
+};
+
+export const timmyQuestionsByDifficulty: Record<Difficulty, string[]> = {
+  "gumshoe": timmyQuestions,
+  "officer": timmyQuestions,
+  "lead-investigator": timmyQuestions,
+};

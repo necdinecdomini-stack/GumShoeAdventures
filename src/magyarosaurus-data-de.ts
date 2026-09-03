@@ -1,4 +1,5 @@
 import type { MagyarReport } from "./magyarosaurus-data";
+import type { Difficulty } from "./types";
 
 export const magyarReportsDe: MagyarReport[] = [
   {
@@ -374,3 +375,9 @@ export const magyarReportsDe: MagyarReport[] = [
     stamp: "MAGYAROSAURUS / BERICHT 11",
   },
 ];
+
+export const magyarReportsDeByDifficulty: Record<Difficulty, MagyarReport[]> = {
+  "gumshoe": magyarReportsDe,
+  "officer": magyarReportsDe,
+  "lead-investigator": magyarReportsDe,
+};

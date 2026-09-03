@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { journalEntries } from "./journal-data";
+import { journalEntriesByDifficulty } from "./journal-data";
+import { getForDifficulty } from "./difficulty";
+import type { Difficulty } from "./types";
 
 export function JournalIcon() {
   return <span className="journal-icon" aria-hidden="true"><i /><i /><i /></span>;
@@ -7,15 +9,17 @@ export function JournalIcon() {
 
 interface Props {
   onClose: () => void;
+  difficulty: Difficulty;
 }
 
-export default function Journal({ onClose }: Props) {
+export default function Journal({ onClose, difficulty }: Props) {
+  const entries = getForDifficulty(journalEntriesByDifficulty, difficulty);
   const [activeEntry, setActiveEntry] = useState<number | null>(null);
   const [mcAnswers, setMcAnswers] = useState<Record<string, number>>({});
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const [openAnswers, setOpenAnswers] = useState<Record<string, string>>({});
 
-  const entry = activeEntry !== null ? journalEntries[activeEntry] : null;
+  const entry = activeEntry !== null ? entries[activeEntry] : null;
 
   if (!entry) {
     return (
@@ -26,10 +30,10 @@ export default function Journal({ onClose }: Props) {
         </header>
         <div className="window-toolbar">
           <span>DIARY ENTRIES</span>
-          <span>{journalEntries.length} {journalEntries.length === 1 ? "ENTRY" : "ENTRIES"}</span>
+          <span>{entries.length} {entries.length === 1 ? "ENTRY" : "ENTRIES"}</span>
         </div>
         <div className="journal-entry-list">
-          {journalEntries.map((e, i) => (
+          {entries.map((e, i) => (
             <button key={e.id} className="journal-entry-item" onClick={() => setActiveEntry(i)}>
               <span className="journal-entry-number">{String(i + 1).padStart(2, "0")}</span>
               <span>

@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
-import { timmyReports } from "./timmy-data";
-import { magyarReports } from "./magyarosaurus-data";
-import { magyarReportsDe } from "./magyarosaurus-data-de";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { timmyReportsByDifficulty } from "./timmy-data";
+import { magyarReportsByDifficulty } from "./magyarosaurus-data";
+import { magyarReportsDeByDifficulty } from "./magyarosaurus-data-de";
+import { getForDifficulty } from "./difficulty";
 import { CaseReportApp, ReportIcon, createEmptyReport } from "./case-report";
 import type { CaseReportData, ReportSource } from "./case-report";
 import ComicIntro from "./ComicIntro";
@@ -17,23 +18,18 @@ import { TimmyReportTab, MagyarReportTab, TimmyTaskTab } from "./ReportTabs";
 import TimelineBoard from "./TimelineBoard";
 import NotesBoard from "./NotesBoard";
 import SaveDialog, { loadAllSaves, persistSaves } from "./SaveDialog";
-import type { CaseId, TabKey, CaseNote, TimelineEvent, SelectionDraft, NoteColor, SaveSlot } from "./types";
+import type { CaseId, Difficulty, TabKey, CaseNote, TimelineEvent, SelectionDraft, NoteColor, SaveSlot } from "./types";
 import "./intro.css";
-
-const timmyTabs: { key: TabKey; label: string; code: string }[] = [
-  ...timmyReports.map((report) => ({ key: report.key as TabKey, label: report.label, code: report.code })),
-  { key: "timmy_task", label: "Ermittlungsauftrag", code: "08" },
-];
-
-const magyarTabsEn: { key: TabKey; label: string; code: string }[] =
-  magyarReports.map((report) => ({ key: report.key as TabKey, label: report.label, code: report.code }));
-
-const magyarTabsDe: { key: TabKey; label: string; code: string }[] =
-  magyarReportsDe.map((report) => ({ key: report.key as TabKey, label: report.label, code: report.code }));
 
 const firstTabForCase: Record<CaseId, TabKey> = {
   "timmy-two-shoes": "timmy_police",
   "magyarosaurus": "magyar_police",
+};
+
+const difficultyLabels: Record<Difficulty, { en: string; de: string }> = {
+  "gumshoe": { en: "GUMSHOE", de: "SCHNÜFFLER" },
+  "officer": { en: "OFFICER", de: "OFFICER" },
+  "lead-investigator": { en: "LEAD INVESTIGATOR", de: "LEITENDER ERMITTLER" },
 };
 
 const noteColors: NoteColor[] = ["amber", "blue", "green", "rose"];
@@ -41,6 +37,7 @@ const noteColors: NoteColor[] = ["amber", "blue", "green", "rose"];
 export default function Home() {
   const [view, setView] = useState<"intro" | "map" | "terminal" | LocationId>("intro");
   const [language, setLanguage] = useState<"en" | "de">("en");
+  const [difficulty, setDifficulty] = useState<Difficulty>("officer");
   const [muted, setMuted] = useState(isMuted());
   const [folderOpen, setFolderOpen] = useState(false);
   const [caseOpen, setCaseOpen] = useState(false);
@@ -79,10 +76,29 @@ export default function Home() {
   const [confirmLoad, setConfirmLoad] = useState<number | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
 
+  const timmyTabs = useMemo(() => {
+    const reports = getForDifficulty(timmyReportsByDifficulty, difficulty);
+    return [
+      ...reports.map((report) => ({ key: report.key as TabKey, label: report.label, code: report.code })),
+      { key: "timmy_task" as TabKey, label: "Ermittlungsauftrag", code: "08" },
+    ];
+  }, [difficulty]);
+
+  const magyarTabsEn = useMemo(() => {
+    const reports = getForDifficulty(magyarReportsByDifficulty, difficulty);
+    return reports.map((report) => ({ key: report.key as TabKey, label: report.label, code: report.code }));
+  }, [difficulty]);
+
+  const magyarTabsDe = useMemo(() => {
+    const reports = getForDifficulty(magyarReportsDeByDifficulty, difficulty);
+    return reports.map((report) => ({ key: report.key as TabKey, label: report.label, code: report.code }));
+  }, [difficulty]);
+
   const buildSaveSlot = useCallback((name: string): SaveSlot => ({
     name,
     savedAt: new Date().toISOString(),
     language,
+    difficulty,
     selectedCase,
     activeTab,
     visited: [...visited],
@@ -91,7 +107,7 @@ export default function Home() {
     timeline,
     reports,
     allSuspects,
-  }), [language, selectedCase, activeTab, visited, readEmails, notes, timeline, reports, allSuspects]);
+  }), [language, difficulty, selectedCase, activeTab, visited, readEmails, notes, timeline, reports, allSuspects]);
 
   const saveToSlot = useCallback((index: number) => {
     const slot = buildSaveSlot(`Save ${index + 1}`);
@@ -109,6 +125,7 @@ export default function Home() {
     const slot = saveSlots[index];
     if (!slot) return;
     setLanguage(slot.language);
+    setDifficulty(slot.difficulty ?? "officer");
     setSelectedCase(slot.selectedCase);
     setActiveTab(slot.activeTab);
     setVisited(new Set(slot.visited));
@@ -300,7 +317,7 @@ export default function Home() {
   }, [view]);
 
   if (view === "intro") {
-    return <ComicIntro onComplete={(lang) => { setLanguage(lang); setView("terminal"); }} />;
+    return <ComicIntro onComplete={(lang, diff) => { setLanguage(lang); setDifficulty(diff); setView("terminal"); }} />;
   }
 
   if (view === "map") {
@@ -622,7 +639,7 @@ export default function Home() {
               <SaveIcon />
               <span>SAVE / LOAD</span>
             </button>
-            <div className="desktop-status"><span>2 cases assigned</span><span>Network: secure</span></div>
+            <div className="desktop-status"><span>2 cases assigned</span><span className="rank-badge">{language === "de" ? "RANG" : "RANK"}: {difficultyLabels[difficulty][language]}</span><span>Network: secure</span></div>
 
             {folderOpen && (
               <section className="file-window" aria-label="Case Files folder">
@@ -747,9 +764,9 @@ export default function Home() {
             <section className="document-view">
               <div className="document-toolbar"><span>{activeTitle}</span><span>SELECT TEXT TO FLAG</span></div>
               <div className="document-scroll" onMouseUp={captureSelection} onTouchEnd={() => window.setTimeout(captureSelection, 0)}>
-                {activeTab.startsWith("timmy_") && activeTab !== "timmy_task" && <TimmyReportTab reportKey={activeTab} />}
-                {activeTab === "timmy_task" && <TimmyTaskTab onSubmit={() => setSubmitOpen(true)} />}
-                {activeTab.startsWith("magyar_") && <MagyarReportTab reportKey={activeTab} lang={language} />}
+                {activeTab.startsWith("timmy_") && activeTab !== "timmy_task" && <TimmyReportTab reportKey={activeTab} difficulty={difficulty} />}
+                {activeTab === "timmy_task" && <TimmyTaskTab onSubmit={() => setSubmitOpen(true)} difficulty={difficulty} />}
+                {activeTab.startsWith("magyar_") && <MagyarReportTab reportKey={activeTab} lang={language} difficulty={difficulty} />}
               </div>
             </section>
           </div>
@@ -782,7 +799,7 @@ export default function Home() {
         {timelineOpen && <TimelineBoard events={caseTimeline} german={germanCase} onAdd={addBlankTimelineEvent} onUpdate={updateTimelineEvent} onDelete={(id) => setTimeline((current) => current.filter((event) => event.id !== id))} onMove={moveTimelineEvent} onOpenSource={openTimelineSource} onClose={() => setTimelineOpen(false)} />}
         {suspectsOpen && <SuspectsBoard suspects={currentSuspects} german={germanCase} onUpdate={(updated) => setAllSuspects((current) => ({ ...current, [selectedCase]: updated }))} onClose={() => setSuspectsOpen(false)} />}
         {submitOpen && <CaseReportApp caseId={selectedCase} report={currentReport} sources={reportSources} reviewed={currentVisited} total={currentTabs.length} onCaseChange={setSelectedCase} onChange={(report) => setReports((current) => ({ ...current, [selectedCase]: report }))} onClose={() => setSubmitOpen(false)} />}
-        {journalOpen && <Journal onClose={() => { sfxClose(); setJournalOpen(false); }} />}
+        {journalOpen && <Journal onClose={() => { sfxClose(); setJournalOpen(false); }} difficulty={difficulty} />}
       </section>
     </main>
   );
