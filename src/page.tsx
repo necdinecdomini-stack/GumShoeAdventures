@@ -39,6 +39,16 @@ export default function Home() {
   const [language, setLanguage] = useState<"en" | "de">("en");
   const [difficulty, setDifficulty] = useState<Difficulty>("officer");
   const [muted, setMuted] = useState(isMuted());
+  const [textSize, setTextSize] = useState<number>(() => {
+    try { return Number(localStorage.getItem("sid-text-size")) || 100; } catch { return 100; }
+  });
+  const changeTextSize = (delta: number) => {
+    setTextSize(prev => {
+      const next = Math.min(150, Math.max(80, prev + delta));
+      try { localStorage.setItem("sid-text-size", String(next)); } catch {}
+      return next;
+    });
+  };
   const [folderOpen, setFolderOpen] = useState(false);
   const [caseOpen, setCaseOpen] = useState(false);
   const [selectedCase, setSelectedCase] = useState<CaseId>("timmy-two-shoes");
@@ -589,10 +599,10 @@ export default function Home() {
 
   return (
     <main className="terminal-page">
-      <section className="terminal-shell">
+      <section className="terminal-shell" style={{ "--text-scale": textSize / 100 } as React.CSSProperties}>
         <header className="system-bar">
           <div className="system-name"><button className="back-to-map-header" onClick={() => { sfxClick(); setView("map"); }} aria-label="Back to city map">← MAP</button><span className="status-light" />RPD EVIDENCE NETWORK</div>
-          <div className="system-actions"><span>TERMINAL 04</span><button className="sound-toggle" onClick={() => { setMuted(toggleMute()); sfxClick(); }} aria-label={muted ? "Unmute" : "Mute"}>{muted ? "\u{1F507}" : "\u{1F50A}"}</button></div>
+          <div className="system-actions"><span>TERMINAL 04</span><div className="text-size-controls"><button className="text-size-btn" onClick={() => { changeTextSize(-10); sfxClick(); }} disabled={textSize <= 80} aria-label="Decrease text size">-</button><span className="text-size-label">{textSize}%</span><button className="text-size-btn" onClick={() => { changeTextSize(10); sfxClick(); }} disabled={textSize >= 150} aria-label="Increase text size">+</button></div><button className="sound-toggle" onClick={() => { setMuted(toggleMute()); sfxClick(); }} aria-label={muted ? "Unmute" : "Mute"}>{muted ? "\u{1F507}" : "\u{1F50A}"}</button></div>
         </header>
 
         <HighlightsContext.Provider value={caseNotes}>

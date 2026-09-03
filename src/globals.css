@@ -67,6 +67,11 @@ button { font: inherit; }
 .system-actions button { border: 1px solid #38565e; background: transparent; color: #b9d0cc; padding: .38rem .55rem; cursor: pointer; }
 .sound-toggle { font-size: 1rem; line-height: 1; border: none !important; padding: .25rem !important; opacity: 0.7; transition: opacity 0.2s; }
 .sound-toggle:hover { opacity: 1; }
+.text-size-controls { display: flex; align-items: center; gap: .2rem; margin-left: .25rem; border-left: 1px solid #38565e; padding-left: .5rem; }
+.text-size-btn { width: 24px; height: 24px; display: grid; place-items: center; border: 1px solid #38565e; background: transparent; color: #b9d0cc; font: 700 .85rem "Courier New", monospace; cursor: pointer; padding: 0; line-height: 1; }
+.text-size-btn:hover:not(:disabled) { border-color: var(--teal); color: white; background: rgba(119,200,192,.1); }
+.text-size-btn:disabled { opacity: .3; cursor: default; }
+.text-size-label { color: #64817d; font: 700 .58rem "Courier New", monospace; min-width: 2.5em; text-align: center; }
 
 .back-to-map-header { font-size: 0.65rem; font-family: "Courier New", monospace; letter-spacing: 0.1em; border: 1px solid #38565e; background: transparent; color: var(--teal); padding: 0.25rem 0.5rem; cursor: pointer; transition: all 0.2s; margin-right: 0.5rem; }
 .back-to-map-header:hover { background: rgba(119, 200, 192, 0.1); border-color: var(--teal); }
@@ -226,12 +231,12 @@ button { font: inherit; }
 .case-facts span { color: #6b7475; font: .63rem "Courier New", monospace; text-transform: uppercase; }
 .case-facts strong { font-size: .84rem; }
 .reading-copy { max-width: 72ch; }
-.reading-copy h3 { font: 800 1rem "Courier New", monospace; text-transform: uppercase; letter-spacing: .08em; }
-.reading-copy p { margin: 0 0 1.2rem; font: 1rem/1.72 Georgia, serif; }
+.reading-copy h3 { font: 800 calc(1rem * var(--text-scale, 1)) "Courier New", monospace; text-transform: uppercase; letter-spacing: .08em; }
+.reading-copy p { margin: 0 0 1.2rem; font: calc(1rem * var(--text-scale, 1))/1.72 Georgia, serif; }
 .report-section { margin-bottom: 1.65rem; }
 .report-section ul { margin: 0 0 1.2rem; padding-left: 1.4rem; }
 .report-section li { padding-left: .3rem; }
-.report-section li p { margin-bottom: .75rem; }
+.report-section li p { margin-bottom: .75rem; font-size: calc(1rem * var(--text-scale, 1)); }
 .suspect-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: .35rem; margin: 0 0 1.5rem; }
 .suspect-strip span { border: 1px solid #9f9787; background: #d8d0bf; padding: .65rem .4rem; text-align: center; color: #594b43; font: 800 .58rem/1.35 "Courier New", monospace; }
 .evidence-highlight { margin: 0 -.04em; border-radius: 2px; padding: .05em .04em; color: inherit; background: rgba(235,188,76,.54); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
@@ -671,8 +676,8 @@ button { font: inherit; }
 .journal-page::before { content: ""; position: absolute; left: 2rem; top: 0; bottom: 0; width: 1px; background: rgba(180,80,80,.22); }
 .journal-heading { margin: 0 0 .2rem; font: italic 700 1.35rem Georgia, "Times New Roman", serif; color: #3d2518; }
 .journal-subheading { margin: 0 0 1.5rem; font: italic 400 .95rem Georgia, "Times New Roman", serif; color: #8b6b52; border-bottom: 1px solid #c8b894; padding-bottom: .75rem; }
-.journal-paragraph { margin: 0 0 .85rem; font: .95rem/1.7 Georgia, "Times New Roman", serif; color: #2a1e14; }
-.journal-quote { margin: .5rem 0 1rem 1.2rem; padding: .75rem 1rem; border-left: 3px solid #8b6b52; background: rgba(139,107,82,.08); font: italic .92rem/1.65 Georgia, "Times New Roman", serif; color: #4a3520; }
+.journal-paragraph { margin: 0 0 .85rem; font: calc(.95rem * var(--text-scale, 1))/1.7 Georgia, "Times New Roman", serif; color: #2a1e14; }
+.journal-quote { margin: .5rem 0 1rem 1.2rem; padding: .75rem 1rem; border-left: 3px solid #8b6b52; background: rgba(139,107,82,.08); font: italic calc(.92rem * var(--text-scale, 1))/1.65 Georgia, "Times New Roman", serif; color: #4a3520; }
 
 .journal-questions { margin: 0 1.5rem 1.5rem; padding: 1.5rem; border: 1px solid var(--line); background: #0a1e24; }
 .journal-questions h3 { margin: 0 0 .35rem; color: #d3b260; font: 800 .85rem "Courier New", monospace; letter-spacing: .1em; text-transform: uppercase; }
