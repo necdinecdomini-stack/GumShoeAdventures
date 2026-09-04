@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { timmyReportsByDifficulty } from "./timmy-data";
 import { magyarReportsByDifficulty } from "./magyarosaurus-data";
 import { magyarReportsDeByDifficulty } from "./magyarosaurus-data-de";
+import { telescopeReportsByDifficulty } from "./telescope-data";
 import { getForDifficulty } from "./difficulty";
 import { CaseReportApp, ReportIcon, createEmptyReport } from "./case-report";
 import type { CaseReportData, ReportSource } from "./case-report";
@@ -14,7 +15,7 @@ import { toggleMute, isMuted, sfxClick, sfxOpen, sfxClose } from "./lib/audio";
 import { HighlightsContext } from "./HighlightedText";
 import { FolderIcon, SaveIcon, NotepadIcon, TimelineIcon, EmailIcon } from "./Icons";
 import Journal, { JournalIcon } from "./Journal";
-import { TimmyReportTab, MagyarReportTab, TimmyTaskTab } from "./ReportTabs";
+import { TimmyReportTab, MagyarReportTab, TimmyTaskTab, TelescopeReportTab, TelescopeTaskTab } from "./ReportTabs";
 import TimelineBoard from "./TimelineBoard";
 import NotesBoard from "./NotesBoard";
 import SaveDialog, { loadAllSaves, persistSaves } from "./SaveDialog";
@@ -24,6 +25,7 @@ import "./intro.css";
 const firstTabForCase: Record<CaseId, TabKey> = {
   "timmy-two-shoes": "timmy_police",
   "magyarosaurus": "magyar_police",
+  "broken-telescope": "telescope_briefing",
 };
 
 const difficultyLabels: Record<Difficulty, { en: string; de: string }> = {
@@ -58,6 +60,7 @@ export default function Home() {
   const [reports, setReports] = useState<Record<CaseId, CaseReportData>>(() => ({
     "timmy-two-shoes": createEmptyReport(),
     "magyarosaurus": createEmptyReport(),
+    "broken-telescope": createEmptyReport(),
   }));
   const [reportsLoaded, setReportsLoaded] = useState(false);
   const [notes, setNotes] = useState<CaseNote[]>([]);
@@ -75,6 +78,7 @@ export default function Home() {
   const [allSuspects, setAllSuspects] = useState<Record<CaseId, CaseSuspects>>(() => ({
     "timmy-two-shoes": createEmptySuspects("timmy-two-shoes"),
     "magyarosaurus": createEmptySuspects("magyarosaurus"),
+    "broken-telescope": createEmptySuspects("broken-telescope"),
   }));
   const [suspectsLoaded, setSuspectsLoaded] = useState(false);
   const [suspectPicker, setSuspectPicker] = useState<{ text: string; tab: TabKey; source: string; x: number; y: number } | null>(null);
@@ -91,6 +95,14 @@ export default function Home() {
     return [
       ...reports.map((report) => ({ key: report.key as TabKey, label: report.label, code: report.code })),
       { key: "timmy_task" as TabKey, label: "Ermittlungsauftrag", code: "08" },
+    ];
+  }, [difficulty]);
+
+  const telescopeTabs = useMemo(() => {
+    const reports = getForDifficulty(telescopeReportsByDifficulty, difficulty);
+    return [
+      ...reports.map((report) => ({ key: report.key as TabKey, label: report.label, code: report.code })),
+      { key: "telescope_task" as TabKey, label: "Investigation Task", code: "06" },
     ];
   }, [difficulty]);
 
@@ -234,6 +246,7 @@ export default function Home() {
         setReports({
           "timmy-two-shoes": parsed["timmy-two-shoes"] ?? createEmptyReport(),
           "magyarosaurus": parsed["magyarosaurus"] ?? createEmptyReport(),
+          "broken-telescope": parsed["broken-telescope"] ?? createEmptyReport(),
         });
       }
     } catch {
@@ -294,6 +307,7 @@ export default function Home() {
         setAllSuspects({
           "timmy-two-shoes": parsed["timmy-two-shoes"] ?? createEmptySuspects("timmy-two-shoes"),
           "magyarosaurus": parsed["magyarosaurus"] ?? createEmptySuspects("magyarosaurus"),
+          "broken-telescope": parsed["broken-telescope"] ?? createEmptySuspects("broken-telescope"),
         });
       }
     } catch {
@@ -363,8 +377,8 @@ export default function Home() {
   };
 
   const magyarTabs = language === "de" ? magyarTabsDe : magyarTabsEn;
-  const allTabs = [...timmyTabs, ...magyarTabs];
-  const currentTabs = selectedCase === "magyarosaurus" ? magyarTabs : timmyTabs;
+  const allTabs = [...timmyTabs, ...magyarTabs, ...telescopeTabs];
+  const currentTabs = selectedCase === "magyarosaurus" ? magyarTabs : selectedCase === "broken-telescope" ? telescopeTabs : timmyTabs;
   const currentVisited = currentTabs.filter((tab) => visited.has(tab.key)).length;
   const caseNotes = notes.filter((note) => (note.caseId ?? "timmy-two-shoes") === selectedCase);
   const caseTimeline = timeline.filter((event) => event.caseId === selectedCase);
@@ -617,7 +631,7 @@ export default function Home() {
             <button className="folder-button email-desktop-button" onClick={() => { sfxOpen(); setEmailOpen(true); }} aria-label="Open email">
               <EmailIcon />
               <span>E-MAIL</span>
-              {2 - readEmails.size > 0 && <b>{2 - readEmails.size}</b>}
+              {3 - readEmails.size > 0 && <b>{3 - readEmails.size}</b>}
             </button>
             <button className="folder-button files-desktop-button" onClick={() => { sfxOpen(); setFolderOpen(true); }} aria-label="Open Case Files folder">
               <FolderIcon />
@@ -649,13 +663,18 @@ export default function Home() {
               <SaveIcon />
               <span>SAVE / LOAD</span>
             </button>
-            <div className="desktop-status"><span>2 cases assigned</span><span className="rank-badge">{language === "de" ? "RANG" : "RANK"}: {difficultyLabels[difficulty][language]}</span><span>Network: secure</span></div>
+            <div className="desktop-status"><span>3 cases assigned</span><span className="rank-badge">{language === "de" ? "RANG" : "RANK"}: {difficultyLabels[difficulty][language]}</span><span>Network: secure</span></div>
 
             {folderOpen && (
               <section className="file-window" aria-label="Case Files folder">
                 <header className="window-titlebar"><span><FolderIcon small />CASE FILES</span><button onClick={() => { sfxClose(); setFolderOpen(false); }} aria-label="Close folder">×</button></header>
-                <div className="window-toolbar"><span>ACTIVE INVESTIGATIONS</span><span>2 ITEMS</span></div>
+                <div className="window-toolbar"><span>ACTIVE INVESTIGATIONS</span><span>3 ITEMS</span></div>
                 <div className="file-list">
+                  <button className="case-file" onClick={() => openCase("broken-telescope")}>
+                    <span className="paper-file" aria-hidden="true">BKT</span>
+                    <span><strong>The Broken Telescope</strong><small>Case SID-1947-0003 · English · 5 Documents</small></span>
+                    <b aria-hidden="true">OPEN →</b>
+                  </button>
                   <button className="case-file" onClick={() => openCase("magyarosaurus")}>
                     <span className={language === "de" ? "paper-file german-file" : "paper-file"} aria-hidden="true">MDC</span>
                     <span><strong>{language === "de" ? "Der verschwundene Magyarosaurus" : "The Missing Magyarosaurus"}</strong><small>{language === "de" ? "Aktenzeichen SID-2026-0002 · Deutsch · 11 Dokumente" : "Case SID-2026-0002 · English · 11 Documents"}</small></span>
@@ -673,9 +692,14 @@ export default function Home() {
             {emailOpen && (
               <section className="email-window" role="dialog" aria-modal="true" aria-label="Email">
                 <header className="window-titlebar"><span><EmailIcon />E-MAIL</span><button onClick={() => { sfxClose(); setEmailOpen(false); setActiveEmail(null); }} aria-label="Close email">×</button></header>
-                <div className="window-toolbar"><span>INBOX</span><span>2 MESSAGES</span></div>
+                <div className="window-toolbar"><span>INBOX</span><span>3 MESSAGES</span></div>
                 {activeEmail === null ? (
                   <div className="email-inbox">
+                    <button className={`email-row${readEmails.has(2) ? " read" : ""}`} onClick={() => { setActiveEmail(2); setReadEmails((prev) => new Set(prev).add(2)); }}>
+                      <span className="email-row-from">Chief Nymos</span>
+                      <span className="email-row-subject">New case — The Broken Telescope</span>
+                      <span className="email-row-date">Jul 2</span>
+                    </button>
                     <button className={`email-row${readEmails.has(1) ? " read" : ""}`} onClick={() => { setActiveEmail(1); setReadEmails((prev) => new Set(prev).add(1)); }}>
                       <span className="email-row-from">Chief Nymos</span>
                       <span className="email-row-subject">New case — Missing Magyarosaurus</span>
@@ -708,7 +732,7 @@ export default function Home() {
                       </div>
                     </div>
                   </div>
-                ) : (
+                ) : activeEmail === 1 ? (
                   <div className="email-body">
                     <button className="email-back" onClick={() => setActiveEmail(null)}>← INBOX</button>
                     <div className="email-header">
@@ -727,6 +751,25 @@ export default function Home() {
                         <div className="email-attachment-label">📎 ATTACHMENT: Chief_Radioactive_Beastie.png</div>
                         <img src="./email/chief-case2.png" alt="The Chief standing triumphantly on a captured radioactive beast" />
                       </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="email-body">
+                    <button className="email-back" onClick={() => setActiveEmail(null)}>← INBOX</button>
+                    <div className="email-header">
+                      <div className="email-field"><span className="email-label">FROM:</span><span>Chief Nymos &lt;nemo@rpd.neuheim.gov&gt;</span></div>
+                      <div className="email-field"><span className="email-label">TO:</span><span>Det. &quot;Bones&quot; Malone &lt;bones@rpd.neuheim.gov&gt;</span></div>
+                      <div className="email-field"><span className="email-label">DATE:</span><span>July 2, 2026 — 06:30 AM JST</span></div>
+                      <div className="email-field"><span className="email-label">SUBJECT:</span><span className="email-subject">New case — The Broken Telescope</span></div>
+                    </div>
+                    <div className="email-content">
+                      <p>Good morning Bones.</p>
+                      <p>The Kaiju situation is under control. Mostly.</p>
+                      <p>Meanwhile! We have been asked to help the police. And, of course, I agreed to do our friends in blue a favour. And when I say &quot;I agreed to do them a favour&quot; that means &quot;You&apos;re going to do them a favour.&quot;</p>
+                      <p>The telescope at the Royal Neuheim Observatory broke. The scientists are blaming each other. The police found nothing criminal but the university thinks someone has been sabotaging the equipment.</p>
+                      <p>It&apos;s a quieter sort of mystery. No dinosaurs this time. Just angry astronomers.</p>
+                      <p>Find out who&apos;s up to mischief so we can get back to the fun stuff.</p>
+                      <p>— The Chief.</p>
                     </div>
                   </div>
                 )}
@@ -755,7 +798,7 @@ export default function Home() {
           <div className="case-reader">
             <header className="case-reader-titlebar"><span><FolderIcon small />CASE FILES</span><button onClick={() => { sfxClose(); setCaseOpen(false); }} aria-label="Close case files">×</button></header>
             <aside className="case-sidebar">
-              <div className="case-id-block"><span>{germanCase ? "AKTIVER FALL" : "ACTIVE CASE"}</span><strong>{selectedCase === "magyarosaurus" ? "MDC" : "TTS"}</strong><p>{selectedCase === "magyarosaurus" ? (language === "de" ? "Der verschwundene Magyarosaurus" : "The Missing Magyarosaurus") : "Der Brand in Timmy Two-Shoes' Restaurant"}</p></div>
+              <div className="case-id-block"><span>{germanCase ? "AKTIVER FALL" : "ACTIVE CASE"}</span><strong>{selectedCase === "magyarosaurus" ? "MDC" : selectedCase === "broken-telescope" ? "BKT" : "TTS"}</strong><p>{selectedCase === "magyarosaurus" ? (language === "de" ? "Der verschwundene Magyarosaurus" : "The Missing Magyarosaurus") : selectedCase === "broken-telescope" ? "The Broken Telescope" : "Der Brand in Timmy Two-Shoes' Restaurant"}</p></div>
               <nav aria-label="Case documents">
                 {currentTabs.map((tab) => (
                   <button key={tab.key} className={activeTab === tab.key ? "active" : ""} onClick={() => openTab(tab.key)}>
@@ -777,6 +820,8 @@ export default function Home() {
                 {activeTab.startsWith("timmy_") && activeTab !== "timmy_task" && <TimmyReportTab reportKey={activeTab} difficulty={difficulty} />}
                 {activeTab === "timmy_task" && <TimmyTaskTab onSubmit={() => setSubmitOpen(true)} difficulty={difficulty} />}
                 {activeTab.startsWith("magyar_") && <MagyarReportTab reportKey={activeTab} lang={language} difficulty={difficulty} />}
+                {activeTab.startsWith("telescope_") && activeTab !== "telescope_task" && <TelescopeReportTab reportKey={activeTab} difficulty={difficulty} />}
+                {activeTab === "telescope_task" && <TelescopeTaskTab onSubmit={() => setSubmitOpen(true)} difficulty={difficulty} />}
               </div>
             </section>
           </div>

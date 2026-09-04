@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 
-export type ReportCaseId = "timmy-two-shoes" | "magyarosaurus";
+export type ReportCaseId = "timmy-two-shoes" | "magyarosaurus" | "broken-telescope";
 
 export type CaseReportData = {
   investigator: string;
@@ -38,6 +38,12 @@ const caseMeta = {
     titleEn: "The Missing Magyarosaurus",
     titleDe: "Der verschwundene Magyarosaurus",
     fileName: "SID-2026-0002_CaseReport.pdf",
+  },
+  "broken-telescope": {
+    code: "SID-1947-0003",
+    titleEn: "The Broken Telescope",
+    titleDe: "Das zerbrochene Teleskop",
+    fileName: "SID-1947-0003_CaseReport.pdf",
   },
 } satisfies Record<ReportCaseId, Record<string, string>>;
 
@@ -239,7 +245,7 @@ export function CaseReportApp({
           <div className="report-letterhead"><p>RIVERSIDE POLICE DEPARTMENT</p><h1>Special Investigations Division</h1><span>Final investigative assessment / Abschließende Ermittlungsbewertung</span></div>
 
           <section className="report-case-meta">
-            <label><DualLabel en="Case" de="Fall" /><select value={caseId} onChange={(event) => onCaseChange(event.target.value as ReportCaseId)}><option value="timmy-two-shoes">NPD-2026-1187 — Timmy Two-Shoes</option><option value="magyarosaurus">SID-2026-0002 — Magyarosaurus</option></select></label>
+            <label><DualLabel en="Case" de="Fall" /><select value={caseId} onChange={(event) => onCaseChange(event.target.value as ReportCaseId)}><option value="timmy-two-shoes">NPD-2026-1187 — Timmy Two-Shoes</option><option value="magyarosaurus">SID-2026-0002 — Magyarosaurus</option><option value="broken-telescope">SID-1947-0003 — Broken Telescope</option></select></label>
             <div><DualLabel en="Case number" de="Aktenzeichen" /><strong>{meta.code}</strong></div>
             <label><DualLabel en="Investigator or student" de="Ermittler oder Schüler" /><input value={report.investigator} onChange={(event) => change({ investigator: event.target.value })} required placeholder="Name / Name" /></label>
             <div><DualLabel en="Documents reviewed" de="Gelesene Dokumente" /><strong>{reviewed} / {total}</strong></div>

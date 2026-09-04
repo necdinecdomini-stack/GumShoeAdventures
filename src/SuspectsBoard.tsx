@@ -36,6 +36,12 @@ export const caseSuspects: Record<ReportCaseId, SuspectDefinition[]> = {
     { id: "green", name: "Dr. Krisztina Green", role: "Palaeontologist — disputed ownership, original discoverer" },
     { id: "jameson", name: "James John Jameson", role: "Former Security Chief — dismissed, active account" },
   ],
+  "broken-telescope": [
+    { id: "stahl", name: "Dr. Heinrich Stahl", role: "Galaxy researcher — 20 years at observatory, difficult personality" },
+    { id: "marek", name: "Dr. Viktor Marek", role: "Cepheid star researcher — most frequent victim of errors" },
+    { id: "brenner", name: "Dr. Lukas Brenner", role: "Binary star researcher — falling behind, often at observatory" },
+    { id: "zeller", name: "Dr. Katrin Zeller", role: "Lunar researcher — uses computer only, not the telescope" },
+  ],
 };
 
 export function createEmptySuspects(caseId: ReportCaseId): CaseSuspects {
