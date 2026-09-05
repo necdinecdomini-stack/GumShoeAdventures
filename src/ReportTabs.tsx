@@ -150,21 +150,23 @@ export function TelescopeReportTab({ reportKey, difficulty }: { reportKey: TabKe
 
 export function TelescopeTaskTab({ onSubmit, difficulty }: { onSubmit: () => void; difficulty: Difficulty }) {
   const questions = getForDifficulty(telescopeQuestionsByDifficulty, difficulty);
+  const reports = getForDifficulty(telescopeReportsByDifficulty, difficulty);
+  const docCount = reports.length;
   return (
     <article className="document-page">
       <header className="document-heading">
         <p>Special Investigations · Training Assignment</p>
         <h2>The Broken Telescope</h2>
-        <span>5 documents · 4 suspects · 1 verdict</span>
+        <span>{docCount} documents · 4 suspects · 1 verdict</span>
       </header>
-      <EvidenceParagraph id="telescope-task-intro" className="task-note">Read all five documents. Compare the activity log with the scientists' statements. Then decide who is most likely responsible for the telescope problems. A suspicious person is not automatically guilty.</EvidenceParagraph>
+      <EvidenceParagraph id="telescope-task-intro" className="task-note">{`Read all ${docCount} documents. Compare the activity log with the scientists' statements. Then decide who is most likely responsible for the telescope problems. A suspicious person is not automatically guilty.`}</EvidenceParagraph>
       <div className="suspect-strip"><span>NOBODY — ACCIDENT</span><span>DR. STAHL</span><span>DR. MAREK</span><span>DR. BRENNER</span><span>DR. ZELLER</span></div>
       <ol className="task-list">{questions.map((question, index) => <li key={question}><span>{String(index + 1).padStart(2, "0")}</span><EvidenceParagraph id={`telescope-question-${index}`}>{question}</EvidenceParagraph></li>)}</ol>
       <div className="task-submit-panel">
         <div><span>FINAL STEP</span><strong>Ready to close the case?</strong><p>Give your verdict and explain which evidence supports it.</p></div>
         <button onClick={onSubmit}>SUBMIT CASE REPORT →</button>
       </div>
-      <footer className="page-stamp">BROKEN TELESCOPE / ASSIGNMENT 06</footer>
+      <footer className="page-stamp">BROKEN TELESCOPE / ASSIGNMENT {String(docCount + 1).padStart(2, "0")}</footer>
     </article>
   );
 }

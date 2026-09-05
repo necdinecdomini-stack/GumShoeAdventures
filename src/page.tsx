@@ -102,7 +102,7 @@ export default function Home() {
     const reports = getForDifficulty(telescopeReportsByDifficulty, difficulty);
     return [
       ...reports.map((report) => ({ key: report.key as TabKey, label: report.label, code: report.code })),
-      { key: "telescope_task" as TabKey, label: "Investigation Task", code: "06" },
+      { key: "telescope_task" as TabKey, label: "Investigation Task", code: String(reports.length + 1).padStart(2, "0") },
     ];
   }, [difficulty]);
 
@@ -672,7 +672,7 @@ export default function Home() {
                 <div className="file-list">
                   <button className="case-file" onClick={() => openCase("broken-telescope")}>
                     <span className="paper-file" aria-hidden="true">BKT</span>
-                    <span><strong>The Broken Telescope</strong><small>Case SID-1947-0003 · English · 5 Documents</small></span>
+                    <span><strong>The Broken Telescope</strong><small>Case SID-1947-0003 · English · {telescopeTabs.length - 1} Documents</small></span>
                     <b aria-hidden="true">OPEN →</b>
                   </button>
                   <button className="case-file" onClick={() => openCase("magyarosaurus")}>
@@ -770,6 +770,10 @@ export default function Home() {
                       <p>It&apos;s a quieter sort of mystery. No dinosaurs this time. Just angry astronomers.</p>
                       <p>Find out who&apos;s up to mischief so we can get back to the fun stuff.</p>
                       <p>— The Chief.</p>
+                      <div className="email-attachment">
+                        <div className="email-attachment-label">📎 ATTACHMENT: Royal_Neuheim_Observatory.png</div>
+                        <img src="./email/chief-case3.png" alt="The Royal Neuheim Observatory on a hilltop during a thunderstorm" />
+                      </div>
                     </div>
                   </div>
                 )}

@@ -4,7 +4,7 @@ import type { CaseSuspects } from "./SuspectsBoard";
 export type CaseId = ReportCaseId;
 export type TimmyTabKey = "timmy_police" | "timmy_fire" | "timmy_insurance" | "timmy_sal" | "timmy_bianchi" | "timmy_agnes" | "timmy_tony" | "timmy_task";
 export type MagyarTabKey = "magyar_police" | "magyar_security" | "magyar_acquisition" | "magyar_tachkis" | "magyar_green" | "magyar_lectures" | "magyar_jameson" | "magyar_personnel" | "magyar_voss" | "magyar_grissom" | "magyar_beggar";
-export type TelescopeTabKey = "telescope_briefing" | "telescope_research" | "telescope_log" | "telescope_statements" | "telescope_newspaper" | "telescope_task";
+export type TelescopeTabKey = "telescope_briefing" | "telescope_research" | "telescope_log" | "telescope_statements" | "telescope_interviews" | "telescope_grants" | "telescope_krisztina" | "telescope_tech_report" | "telescope_manufacturer" | "telescope_newspaper" | "telescope_task";
 export type TabKey = TimmyTabKey | MagyarTabKey | TelescopeTabKey;
 export type Difficulty = "gumshoe" | "officer" | "lead-investigator";
 export type NoteColor = "amber" | "blue" | "green" | "rose";
