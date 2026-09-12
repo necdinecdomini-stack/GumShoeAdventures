@@ -18,7 +18,14 @@ export type OperaReport = {
     | "opera_richter_statement"
     | "opera_voss_statement"
     | "opera_fassbinder_statement"
-    | "opera_insurance";
+    | "opera_insurance"
+    | "opera_kastner"
+    | "opera_brandt"
+    | "opera_dressler"
+    | "opera_voll"
+    | "opera_holtz"
+    | "opera_layout"
+    | "opera_intelligence";
   code: string;
   label: string;
   agency: string;
@@ -292,7 +299,233 @@ export const operaReports: OperaReport[] = [
   },
 ];
 
-export const operaQuestions: string[] = [
+const operaSuspectsB: OperaReport[] = [
+  {
+    key: "opera_kastner",
+    code: "08",
+    label: "Suspect: Frieda Kastner",
+    agency: "Neuheim Police Department — Witness Statement",
+    title: "Suspect Statement — Frieda Kastner",
+    meta: [
+      "Case File: NPD-4471",
+      "Witness: Frieda Kastner, 26, music student",
+      "Statement taken by: Officer Petra Lange",
+    ],
+    sections: [
+      {
+        paragraphs: [
+          "I've been following Elias Richter's music for as long as I can remember. He's the reason I started learning violin myself, actually, though I'll never be anywhere near his level. I go to every performance I can, and when I know there's a rehearsal coming up, I try to get to the opera house early so I can see the performers arrive.",
+          "That day I got there around noon with my friend Margarethe. We waited outside by the performer entrance and caught Elias on his way in. He signed my programme, we chatted for a minute, it was lovely. Margarethe had to leave for class before rehearsal started, but I stayed outside with a few others. We could hear bits and pieces through the walls if you stood in the right spot.",
+          "When Elias came out after rehearsal, he said he was heading to The Silver Note for a drink and some music, and did anyone want to come along. Of course I said yes. There were about five or six of us who walked over with him. It's a good twenty minutes across the bridge to the Bohemian District, so we got there maybe half past five, could have been a bit later. Emil was already sitting at the bar when we walked in. He must have gone straight there after rehearsal.",
+          "We spent the whole evening at The Silver Note. Elias played for hours. It was one of those nights where everything just comes together, you know? I didn't leave until well after midnight.",
+          "I don't know anything about the stolen instruments. I was with Elias from the moment he left the opera house until I went home. I can't imagine anyone in our group doing something like this. It's devastating.",
+          "— Frieda Kastner",
+        ],
+      },
+    ],
+    stamp: "THEFT AT THE OPERA / REPORT 08",
+  },
+  {
+    key: "opera_brandt",
+    code: "09",
+    label: "Suspect: Lukas Brandt",
+    agency: "Neuheim Police Department — Witness Statement",
+    title: "Suspect Statement — Lukas Brandt",
+    meta: [
+      "Case File: NPD-4471",
+      "Witness: Lukas Brandt, 34, printer",
+      "Statement taken by: Officer Petra Lange",
+    ],
+    sections: [
+      {
+        paragraphs: [
+          "I like Richter's playing. I'm not one of these people who follows him around to every bar and every event, but when I've got a free afternoon, I go to the opera house and listen from the corridor outside the main hall. The staff mostly look the other way. I sit on the floor with my back against the wall, close my eyes, and just listen. It's the best free entertainment in the city.",
+          "I was there that day. Got in around half one, found my usual spot in the corridor, listened through the afternoon. Beautiful programme. When rehearsal finished around quarter to five, I packed up my things and left through the main entrance. I had to get to work. I do the evening shift at Krause and Sons, the printing press over in the Artisan Quarter. My tram was at five fifteen from the Schillerstrasse stop, the one just south of the opera house. I caught it with a couple of minutes to spare and got to work a few minutes before six. My foreman, Herr Dietrich, marked me in. I was on the press until midnight.",
+          "I heard about the theft the next day. It's rotten luck for Richter. I hope they find whoever did it. But I was at work from six o'clock that evening, and I've got a dozen people who can confirm it.",
+          "— Lukas Brandt",
+        ],
+      },
+    ],
+    stamp: "THEFT AT THE OPERA / REPORT 09",
+  },
+  {
+    key: "opera_dressler",
+    code: "10",
+    label: "Suspect: Emil Dressler",
+    agency: "Neuheim Police Department — Witness Statement",
+    title: "Suspect Statement — Emil Dressler",
+    meta: [
+      "Case File: NPD-4471",
+      "Witness: Emil Dressler, 52, retired clerk",
+      "Statement taken by: Officer Petra Lange",
+    ],
+    sections: [
+      {
+        paragraphs: [
+          "I was in the balcony that day, same as usual. There were a handful of us up there, five or six. We try to stay quiet so the ushers don't make a fuss. I've been listening to rehearsals from the balcony for years, and most of the staff know my face by now. As long as we don't disturb anyone, they leave us be.",
+          "It was a fine rehearsal. Richter was in good form. When they wrapped up around quarter to five, most of us in the balcony stood up and started heading for the main staircase. I remember looking around as we were filing out and noticing that Werner wasn't with us. He'd been sitting a few rows behind me during rehearsal, closer to the side aisle. I figured he'd slipped off to use the washroom or maybe wanted to avoid the crowd on the stairs. I didn't give it much thought.",
+          "I went out through the main entrance and walked to The Silver Note. It's my usual spot. I'd heard that Richter sometimes drops in there after rehearsals, and I thought I'd sit with a beer and see if he turned up. It's about a twenty-minute walk from the opera house, across the Schiller Bridge and through the Bohemian District. I got there around ten past five, maybe quarter past. Ordered a beer and waited.",
+          "Richter showed up about half an hour later with Frieda and a few others. We had a good evening. He played beautifully, as always.",
+          "I didn't hear about the theft until the next day. I don't know who would have taken Richter's violin. It's a terrible loss.",
+          "— Emil Dressler",
+        ],
+      },
+    ],
+    stamp: "THEFT AT THE OPERA / REPORT 10",
+  },
+  {
+    key: "opera_voll",
+    code: "11",
+    label: "Suspect: Margarethe Voll",
+    agency: "Neuheim Police Department — Witness Statement",
+    title: "Suspect Statement — Margarethe Voll",
+    meta: [
+      "Case File: NPD-4471",
+      "Witness: Margarethe Voll, 23, university student",
+      "Statement taken by: Officer Petra Lange",
+    ],
+    sections: [
+      {
+        paragraphs: [
+          "I went to the opera house that morning with Frieda. We got there around noon and waited outside by the performer entrance. Elias signed my programme when he arrived, which was wonderful. But I had Professor Hartmann's seminar at two o'clock, so I had to leave before rehearsal even started. I walked to the university, which is only about ten minutes from the opera house, and I was in class by two.",
+          "After the seminar I went to the university library and stayed there until the evening. I was working on a paper. I didn't leave the library until around eight o'clock.",
+          "I wasn't at the opera house when any of this happened. I wish I could have stayed for the rehearsal, honestly. Now with the theft and everything that's followed, who knows when the season will get back on track.",
+          "Frieda told me about it the next day. She was very upset. We all are. Elias is such a generous person, and the idea that someone would steal from him is just awful.",
+          "— Margarethe Voll",
+        ],
+      },
+    ],
+    stamp: "THEFT AT THE OPERA / REPORT 11",
+  },
+  {
+    key: "opera_holtz",
+    code: "12",
+    label: "Suspect: Werner Holtz",
+    agency: "Neuheim Police Department — Witness Statement",
+    title: "Suspect Statement — Werner Holtz",
+    meta: [
+      "Case File: NPD-4471",
+      "Witness: Werner Holtz, 41, accountant",
+      "Statement taken by: Officer Petra Lange",
+    ],
+    sections: [
+      {
+        paragraphs: [
+          "I was in the balcony during rehearsal, same as I often am. I've been attending Elias Richter's performances and rehearsals for years. I know his repertoire better than most of the orchestra does. I'm one of his most dedicated followers, and I don't apologize for that. Some people collect stamps. I collect musical experiences.",
+          "Yes, I entered the sweepstakes. And no, I didn't win. I was disappointed, and I wrote to Richter about it, more than once. I don't see anything wrong with that. They closed entries early, which I thought was handled poorly. A lot of people felt the same way. But being disappointed about a contest doesn't make a person a thief.",
+          "When rehearsal finished, I made my way downstairs and left the building. I walked to Café Eichhorn on Lindenstrasse. It's just around the corner from the opera house, a few minutes on foot. I got there around five o'clock, had a coffee, read the evening edition of the Neuheimer Tagblatt, and sat for about an hour. It was a quiet afternoon. I don't think anyone I know was there, but I'm a regular; the staff would recognize me. I went home after that and was in for the night by half past six.",
+          "I didn't take anything. I didn't see anything unusual. And I resent being questioned as a suspect simply because I happen to care deeply about Richter's music. There's nothing criminal about admiration.",
+          "— Werner Holtz",
+        ],
+      },
+    ],
+    stamp: "THEFT AT THE OPERA / REPORT 12",
+  },
+];
+
+const operaDocsC: OperaReport[] = [
+  {
+    key: "opera_layout",
+    code: "13",
+    label: "Building Layout Report",
+    agency: "Neuheim State Opera House — Building Security",
+    title: "Supplementary Report: Building Layout and Access",
+    meta: [
+      "Prepared by: Karl Wendt, Head of Building Security",
+      "Subject: Supplementary report on internal layout and access routes, prepared at the request of the Neuheim Police Department",
+    ],
+    sections: [
+      {
+        heading: "Public Areas",
+        paragraphs: [
+          "The main entrance opens into the ground-floor foyer. From the foyer, the grand staircase leads up to the auditorium level and the upper balcony. During performances, the balcony is accessed via the grand staircase and through the upper foyer. Exiting the balcony by this route brings a person back to the grand staircase and down to the main entrance. This is the normal route for audience members and the route our staff directs people to use.",
+        ],
+      },
+      {
+        heading: "Backstage Areas",
+        paragraphs: [
+          "The backstage corridor runs behind the stage at ground level. It connects the instrument staging area, the main storage room, the green room, and the performer dressing rooms. The backstage corridor also connects to Side Entrance B (the performer entrance on Schillerstrasse).",
+        ],
+      },
+      {
+        heading: "Access Between Public and Backstage",
+        paragraphs: [
+          "A service door on the ground floor, at the end of the corridor behind the auditorium's east seating block, connects the public side of the building to the backstage corridor. During rehearsals, this door is left unlocked for the convenience of performers and crew who need to move between the stage and the front of house. During performances, it is locked.",
+          "A person in the upper balcony who wished to reach the backstage area could descend the side stairs from the balcony to the ground-floor corridor, walk to the service door, and pass through into the backstage corridor. The walk from the balcony to the backstage staging area by this route takes approximately three to four minutes.",
+        ],
+      },
+      {
+        heading: "Distances From the Opera House (on foot)",
+        paragraphs: [
+          "From the main entrance to the Schillerstrasse tram stop: approximately 200 meters, two to three minutes.",
+          "From the main entrance to Café Eichhorn on Lindenstrasse: approximately 150 meters, two minutes.",
+          "From Side Entrance B (Schillerstrasse alley) to Café Eichhorn on Lindenstrasse: approximately 200 meters, two to three minutes.",
+          "From the main entrance to The Silver Note, Bohemian District (via the Schiller Bridge): approximately 1.4 kilometers, eighteen to twenty minutes.",
+        ],
+      },
+      {
+        heading: "Note on Building Familiarity",
+        paragraphs: [
+          "Any person who has attended rehearsals regularly from the balcony would, over time, become familiar with the building's internal layout. The service door connecting the public corridor to the backstage area is not concealed or marked as restricted. It is a plain wooden door in the corridor, distinguishable only by its location.",
+          "— Karl Wendt, Head of Building Security",
+        ],
+      },
+    ],
+    stamp: "THEFT AT THE OPERA / REPORT 13",
+  },
+  {
+    key: "opera_intelligence",
+    code: "14",
+    label: "Criminal Intelligence Brief",
+    agency: "Neuheim Police Department — Criminal Intelligence Division",
+    title: "Criminal Intelligence Brief",
+    meta: [
+      "Prepared by: Inspector Katrin Engel, Criminal Intelligence Division",
+      "Subject: Pattern analysis of instrument thefts at cultural institutions",
+      "Classification: Restricted distribution, investigative use only",
+    ],
+    sections: [
+      {
+        heading: "Background",
+        paragraphs: [
+          "At the request of the Special Investigations Division, I have reviewed the Neuheim State Opera theft (Case NPD-4471) against our existing intelligence on organized property theft in the region.",
+        ],
+      },
+      {
+        heading: "Pattern of Similar Incidents",
+        paragraphs: [
+          "Over the past three years, our division has documented four incidents at cultural institutions in Neuheim and neighboring cities that share a consistent method of operation:",
+          "The Neuheim Conservatory lost eleven instruments from a locked rehearsal room. No sign of forced entry. The theft occurred overnight. None of the instruments have been recovered.",
+          "The Brückenstadt Municipal Theatre reported eight orchestral instruments missing from a secured basement storage area. The lock was intact. The theft was discovered on a Monday morning; the building had been closed over the weekend.",
+          "The Oberfeld Academy of Music lost six instruments from a locked display case in their main hall. The case's lock was opened without damage. The theft occurred during a public event, while the building was occupied.",
+          "The Schöntal Civic Opera reported the disappearance of twelve instruments from a backstage storage room. No forced entry. Overnight theft. A loading door at the rear of the building was found unlocked the following morning, though staff insist it was secured.",
+          "In each case, the perpetrators targeted institutional collections rather than individual performers' instruments. In each case, the entry point was a locked door or case that was opened without visible damage. In no case have the instruments been recovered.",
+        ],
+      },
+      {
+        heading: "Known Fencing Route",
+        paragraphs: [
+          "Our intelligence indicates that stolen instruments and cultural artifacts from this region are moved through the Commercial Harbour in Neuheim. The harbour handles enough legitimate cargo traffic that individual crates do not attract scrutiny, and several vessels operating regular routes to ports outside the country have been flagged as suspected carriers.",
+          "We have not yet identified the individuals responsible for the thefts described above. We believe they are the work of a single organized group with expertise in defeating institutional locks and with an established channel for moving stolen goods out of the city by water.",
+        ],
+      },
+      {
+        heading: "Harbour Activity",
+        paragraphs: [
+          "At my request, the Harbour Master's office reviewed their records for the night in question. A cargo vessel registered to a Karelian shipping company departed from the Commercial Harbour at approximately 4:00 AM, several hours after the opera house was closed for the night. The vessel's cargo manifest lists \"miscellaneous cultural goods\" as part of its load. This vessel operates a regular route and has been flagged in previous intelligence reports.",
+          "— Inspector Katrin Engel, Criminal Intelligence Division",
+        ],
+      },
+    ],
+    stamp: "THEFT AT THE OPERA / REPORT 14",
+  },
+];
+
+export const operaReportsGumshoe: OperaReport[] = operaReports;
+export const operaReportsOfficer: OperaReport[] = [...operaReports, ...operaSuspectsB];
+export const operaReportsLeadInvestigator: OperaReport[] = [...operaReports, ...operaSuspectsB, ...operaDocsC];
+
+export const operaQuestionsGumshoe: string[] = [
   "The police arrested Theodor Voss. What three pieces of evidence did they use to justify the arrest?",
   "The police believe the violin theft and the storage room theft were one coordinated plan. The insurance assessor disagrees. Who do you think is right? Use evidence from the documents to explain.",
   "Elias Richter left his violin in the staging area overnight. Was this area locked or unlocked? How is this different from where the other fourteen instruments were stored?",
@@ -303,10 +536,37 @@ export const operaQuestions: string[] = [
   "Write your verdict in 80–120 words. Did the police arrest the right person? What actually happened? Use evidence from at least three different documents.",
 ];
 
-export const operaReportsByDifficulty: Partial<Record<string, OperaReport[]>> = {
-  "officer": operaReports,
+export const operaQuestionsOfficer: string[] = [
+  "The police arrested Theodor Voss. What three pieces of evidence did they use? Do you think their reasoning is sound?",
+  "The insurance assessor (Document 7) recommends treating the violin theft and the storage room theft as separate incidents. What specific differences does he identify between the two thefts?",
+  "Read the five suspect statements (Documents 8–12). For each person, write down where they were during the rehearsal and what they did after rehearsal ended.",
+  "Cross-reference the suspects' statements against each other. Which suspects confirm each other's accounts? Give specific examples.",
+  "Frieda Kastner says \"Emil was already sitting at the bar when we walked in.\" How does this detail help or hurt Emil Dressler's alibi?",
+  "Lukas Brandt claims he was at work by six o'clock. What evidence supports this claim? Is it strong or weak evidence?",
+  "Werner Holtz admits he entered the sweepstakes and wrote to Richter about it \"more than once.\" Look back at Richter's statement (Document 4). How do these two accounts connect?",
+  "Which of the five suspects has no corroborated alibi? Explain why their account cannot be independently verified.",
+  "Write your verdict in 100–150 words. Who stole Richter's violin? Eliminate each of the other suspects using specific evidence, and explain why your chosen suspect is the most likely thief. Use evidence from at least four documents.",
+];
+
+export const operaQuestionsLeadInvestigator: string[] = [
+  "Emil Dressler's statement (Document 10) contains a detail about Werner Holtz that most people would overlook. Find it. Why is it significant?",
+  "Werner Holtz says he \"made my way downstairs and left the building.\" He does not say which staircase he used or which exit he took. Combined with Emil's observation, what does this suggest about Werner's route?",
+  "Using the building layout report (Document 13), describe the route from the upper balcony to the backstage staging area without using the grand staircase. How long does this route take?",
+  "Rehearsal ended at 4:45 PM. Werner Holtz says he arrived at Café Eichhorn \"around five o'clock.\" The café is a two-minute walk from the opera house. Account for the missing time. Construct a minute-by-minute timeline of Werner's likely movements.",
+  "Read the criminal intelligence brief (Document 14). How many similar thefts have occurred in the region? What do they all have in common with the opera house storage room theft?",
+  "The intelligence brief mentions a cargo vessel that departed the Commercial Harbour at 4:00 AM. Why is this detail significant to the storage room theft?",
+  "Contrast the violin theft and the storage room theft. For each one, describe the method, the target, the likely motive, and the type of person who committed it. Explain why these must be two separate crimes by two different actors.",
+  "Write your verdict in 150–200 words. Construct two arguments: (1) Prove that Werner Holtz stole Richter's violin, using the building layout and time-distance evidence. (2) Prove that the storage room theft was carried out by an organized criminal group. Explain why the police theory of a single conspiracy is wrong. Reference evidence from at least five documents.",
+];
+
+export const operaReportsByDifficulty: Record<Difficulty, OperaReport[]> = {
+  "gumshoe": operaReportsGumshoe,
+  "officer": operaReportsOfficer,
+  "lead-investigator": operaReportsLeadInvestigator,
 };
 
-export const operaQuestionsByDifficulty: Partial<Record<string, string[]>> = {
-  "officer": operaQuestions,
+export const operaQuestionsByDifficulty: Record<Difficulty, string[]> = {
+  "gumshoe": operaQuestionsGumshoe,
+  "officer": operaQuestionsOfficer,
+  "lead-investigator": operaQuestionsLeadInvestigator,
 };

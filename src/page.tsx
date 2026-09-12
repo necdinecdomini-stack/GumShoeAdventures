@@ -259,6 +259,7 @@ export default function Home() {
           "timmy-two-shoes": parsed["timmy-two-shoes"] ?? createEmptyReport(),
           "magyarosaurus": parsed["magyarosaurus"] ?? createEmptyReport(),
           "broken-telescope": parsed["broken-telescope"] ?? createEmptyReport(),
+          "theft-at-the-opera": parsed["theft-at-the-opera"] ?? createEmptyReport(),
         });
       }
     } catch {
@@ -320,6 +321,7 @@ export default function Home() {
           "timmy-two-shoes": parsed["timmy-two-shoes"] ?? createEmptySuspects("timmy-two-shoes"),
           "magyarosaurus": parsed["magyarosaurus"] ?? createEmptySuspects("magyarosaurus"),
           "broken-telescope": parsed["broken-telescope"] ?? createEmptySuspects("broken-telescope"),
+          "theft-at-the-opera": parsed["theft-at-the-opera"] ?? createEmptySuspects("theft-at-the-opera"),
         });
       }
     } catch {
