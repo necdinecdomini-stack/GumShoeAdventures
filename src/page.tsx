@@ -814,6 +814,10 @@ export default function Home() {
                       <p>That&apos;s right. Someone has &quot;liberated&quot; a number of world-class instruments from the Opera House. The police have arrested Theodor Voss, the second violinist, but I&apos;ve followed Voss&apos;s career. He&apos;s nineteen and a prodigy. I can&apos;t, don&apos;t want to, believe that he&apos;d ruin his own future just to steal the first violin&apos;s chair.</p>
                       <p>Look into it. For me and for the music.</p>
                       <p>— The Chief</p>
+                      <div className="email-attachment">
+                        <div className="email-attachment-label">📎 ATTACHMENT: Chief_At_The_Opera.png</div>
+                        <img src="./email/chief-case4.png" alt="The Chief in a tuxedo at the opera, giving a thumbs up" />
+                      </div>
                     </div>
                   </div>
                 )}
