@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 
-export type ReportCaseId = "timmy-two-shoes" | "magyarosaurus" | "broken-telescope";
+export type ReportCaseId = "timmy-two-shoes" | "magyarosaurus" | "broken-telescope" | "theft-at-the-opera";
 
 export type CaseReportData = {
   investigator: string;
@@ -44,6 +44,12 @@ const caseMeta = {
     titleEn: "The Broken Telescope",
     titleDe: "Das zerbrochene Teleskop",
     fileName: "SID-1947-0003_CaseReport.pdf",
+  },
+  "theft-at-the-opera": {
+    code: "NPD-4471",
+    titleEn: "Theft at the Opera",
+    titleDe: "Diebstahl in der Oper",
+    fileName: "NPD-4471_CaseReport.pdf",
   },
 } satisfies Record<ReportCaseId, Record<string, string>>;
 

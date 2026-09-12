@@ -2,6 +2,7 @@ import { timmyReportsByDifficulty, timmyQuestionsByDifficulty } from "./timmy-da
 import { magyarReportsByDifficulty } from "./magyarosaurus-data";
 import { magyarReportsDeByDifficulty } from "./magyarosaurus-data-de";
 import { telescopeReportsByDifficulty, telescopeQuestionsByDifficulty } from "./telescope-data";
+import { operaReportsByDifficulty, operaQuestionsByDifficulty } from "./opera-data";
 import { getForDifficulty } from "./difficulty";
 import { EvidenceParagraph } from "./HighlightedText";
 import type { Difficulty, TabKey } from "./types";
@@ -167,6 +168,68 @@ export function TelescopeTaskTab({ onSubmit, difficulty }: { onSubmit: () => voi
         <button onClick={onSubmit}>SUBMIT CASE REPORT →</button>
       </div>
       <footer className="page-stamp">BROKEN TELESCOPE / ASSIGNMENT {String(docCount + 1).padStart(2, "0")}</footer>
+    </article>
+  );
+}
+
+export function OperaReportTab({ reportKey, difficulty }: { reportKey: TabKey; difficulty: Difficulty }) {
+  const reports = getForDifficulty(operaReportsByDifficulty, difficulty);
+  const report = reports.find((item) => item.key === reportKey);
+  if (!report) return null;
+  return (
+    <article className="document-page">
+      <header className="document-heading">
+        <p>{report.agency}</p>
+        <h2>{report.title}</h2>
+        <div className="report-meta">{report.meta.map((line) => <span key={line}>{line}</span>)}</div>
+      </header>
+      <section className="reading-copy report-copy">
+        {report.sections.map((section, sectionIndex) => (
+          <div className="report-section" key={`${report.key}-${sectionIndex}`}>
+            {section.heading && <h3>{section.heading}</h3>}
+            {section.paragraphs?.map((paragraph, paragraphIndex) => <EvidenceParagraph id={`${report.key}-p-${sectionIndex}-${paragraphIndex}`} key={paragraph}>{paragraph}</EvidenceParagraph>)}
+            {section.bullets && <ul>{section.bullets.map((bullet, bulletIndex) => <li key={bullet}><EvidenceParagraph id={`${report.key}-b-${sectionIndex}-${bulletIndex}`}>{bullet}</EvidenceParagraph></li>)}</ul>}
+            {section.table && (
+              <div className="evidence-table-wrap">
+                <table className="evidence-table">
+                  <thead><tr>{section.table.headers.map((header) => <th key={header}>{header}</th>)}</tr></thead>
+                  <tbody>
+                    {section.table.rows.map((row, rowIndex) => (
+                      <tr key={rowIndex}>
+                        {row.map((cell, cellIndex) => <td key={cellIndex}>{cell}</td>)}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        ))}
+      </section>
+      <footer className="page-stamp">{report.stamp}</footer>
+    </article>
+  );
+}
+
+export function OperaTaskTab({ onSubmit, difficulty }: { onSubmit: () => void; difficulty: Difficulty }) {
+  const questions = getForDifficulty(operaQuestionsByDifficulty, difficulty);
+  const reports = getForDifficulty(operaReportsByDifficulty, difficulty);
+  const docCount = reports.length;
+  return (
+    <article className="document-page">
+      <header className="document-heading">
+        <p>Special Investigations · Training Assignment</p>
+        <h2>Theft at the Opera</h2>
+        <span>{docCount} documents · 1 arrest · 1 verdict</span>
+      </header>
+      <EvidenceParagraph id="opera-task-intro" className="task-note">{`Read all ${docCount} documents. The police arrested Theodor Voss on conspiracy charges. They believe he arranged the theft of the lead violinist's instrument to advance his own career. Decide: did the police arrest the right person? What actually happened?`}</EvidenceParagraph>
+      <div className="suspect-strip"><span>VOSS IS GUILTY</span><span>VOSS IS INNOCENT</span><span>TWO SEPARATE THEFTS</span></div>
+      <ol className="task-list">{questions.map((question, index) => <li key={question}><span>{String(index + 1).padStart(2, "0")}</span><EvidenceParagraph id={`opera-question-${index}`}>{question}</EvidenceParagraph></li>)}</ol>
+      <div className="task-submit-panel">
+        <div><span>FINAL STEP</span><strong>Ready to close the case?</strong><p>Give your verdict and explain which evidence supports it.</p></div>
+        <button onClick={onSubmit}>SUBMIT CASE REPORT →</button>
+      </div>
+      <footer className="page-stamp">THEFT AT THE OPERA / ASSIGNMENT {String(docCount + 1).padStart(2, "0")}</footer>
     </article>
   );
 }

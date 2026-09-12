@@ -3,6 +3,7 @@ import { timmyReportsByDifficulty } from "./timmy-data";
 import { magyarReportsByDifficulty } from "./magyarosaurus-data";
 import { magyarReportsDeByDifficulty } from "./magyarosaurus-data-de";
 import { telescopeReportsByDifficulty } from "./telescope-data";
+import { operaReportsByDifficulty } from "./opera-data";
 import { getForDifficulty } from "./difficulty";
 import { CaseReportApp, ReportIcon, createEmptyReport } from "./case-report";
 import type { CaseReportData, ReportSource } from "./case-report";
@@ -15,7 +16,7 @@ import { toggleMute, isMuted, sfxClick, sfxOpen, sfxClose } from "./lib/audio";
 import { HighlightsContext } from "./HighlightedText";
 import { FolderIcon, SaveIcon, NotepadIcon, TimelineIcon, EmailIcon } from "./Icons";
 import Journal, { JournalIcon } from "./Journal";
-import { TimmyReportTab, MagyarReportTab, TimmyTaskTab, TelescopeReportTab, TelescopeTaskTab } from "./ReportTabs";
+import { TimmyReportTab, MagyarReportTab, TimmyTaskTab, TelescopeReportTab, TelescopeTaskTab, OperaReportTab, OperaTaskTab } from "./ReportTabs";
 import TimelineBoard from "./TimelineBoard";
 import NotesBoard from "./NotesBoard";
 import SaveDialog, { loadAllSaves, persistSaves } from "./SaveDialog";
@@ -26,6 +27,7 @@ const firstTabForCase: Record<CaseId, TabKey> = {
   "timmy-two-shoes": "timmy_police",
   "magyarosaurus": "magyar_police",
   "broken-telescope": "telescope_briefing",
+  "theft-at-the-opera": "opera_case_brief",
 };
 
 const difficultyLabels: Record<Difficulty, { en: string; de: string }> = {
@@ -61,6 +63,7 @@ export default function Home() {
     "timmy-two-shoes": createEmptyReport(),
     "magyarosaurus": createEmptyReport(),
     "broken-telescope": createEmptyReport(),
+    "theft-at-the-opera": createEmptyReport(),
   }));
   const [reportsLoaded, setReportsLoaded] = useState(false);
   const [notes, setNotes] = useState<CaseNote[]>([]);
@@ -79,6 +82,7 @@ export default function Home() {
     "timmy-two-shoes": createEmptySuspects("timmy-two-shoes"),
     "magyarosaurus": createEmptySuspects("magyarosaurus"),
     "broken-telescope": createEmptySuspects("broken-telescope"),
+    "theft-at-the-opera": createEmptySuspects("theft-at-the-opera"),
   }));
   const [suspectsLoaded, setSuspectsLoaded] = useState(false);
   const [suspectPicker, setSuspectPicker] = useState<{ text: string; tab: TabKey; source: string; x: number; y: number } | null>(null);
@@ -103,6 +107,14 @@ export default function Home() {
     return [
       ...reports.map((report) => ({ key: report.key as TabKey, label: report.label, code: report.code })),
       { key: "telescope_task" as TabKey, label: "Investigation Task", code: String(reports.length + 1).padStart(2, "0") },
+    ];
+  }, [difficulty]);
+
+  const operaTabs = useMemo(() => {
+    const reports = getForDifficulty(operaReportsByDifficulty, difficulty);
+    return [
+      ...reports.map((report) => ({ key: report.key as TabKey, label: report.label, code: report.code })),
+      { key: "opera_task" as TabKey, label: "Investigation Task", code: String(reports.length + 1).padStart(2, "0") },
     ];
   }, [difficulty]);
 
@@ -377,8 +389,8 @@ export default function Home() {
   };
 
   const magyarTabs = language === "de" ? magyarTabsDe : magyarTabsEn;
-  const allTabs = [...timmyTabs, ...magyarTabs, ...telescopeTabs];
-  const currentTabs = selectedCase === "magyarosaurus" ? magyarTabs : selectedCase === "broken-telescope" ? telescopeTabs : timmyTabs;
+  const allTabs = [...timmyTabs, ...magyarTabs, ...telescopeTabs, ...operaTabs];
+  const currentTabs = selectedCase === "magyarosaurus" ? magyarTabs : selectedCase === "broken-telescope" ? telescopeTabs : selectedCase === "theft-at-the-opera" ? operaTabs : timmyTabs;
   const currentVisited = currentTabs.filter((tab) => visited.has(tab.key)).length;
   const caseNotes = notes.filter((note) => (note.caseId ?? "timmy-two-shoes") === selectedCase);
   const caseTimeline = timeline.filter((event) => event.caseId === selectedCase);
@@ -663,13 +675,18 @@ export default function Home() {
               <SaveIcon />
               <span>SAVE / LOAD</span>
             </button>
-            <div className="desktop-status"><span>3 cases assigned</span><span className="rank-badge">{language === "de" ? "RANG" : "RANK"}: {difficultyLabels[difficulty][language]}</span><span>Network: secure</span></div>
+            <div className="desktop-status"><span>4 cases assigned</span><span className="rank-badge">{language === "de" ? "RANG" : "RANK"}: {difficultyLabels[difficulty][language]}</span><span>Network: secure</span></div>
 
             {folderOpen && (
               <section className="file-window" aria-label="Case Files folder">
                 <header className="window-titlebar"><span><FolderIcon small />CASE FILES</span><button onClick={() => { sfxClose(); setFolderOpen(false); }} aria-label="Close folder">×</button></header>
-                <div className="window-toolbar"><span>ACTIVE INVESTIGATIONS</span><span>3 ITEMS</span></div>
+                <div className="window-toolbar"><span>ACTIVE INVESTIGATIONS</span><span>4 ITEMS</span></div>
                 <div className="file-list">
+                  <button className="case-file" onClick={() => openCase("theft-at-the-opera")}>
+                    <span className="paper-file" aria-hidden="true">OPR</span>
+                    <span><strong>Theft at the Opera</strong><small>Case NPD-4471 · English · {operaTabs.length - 1} Documents</small></span>
+                    <b aria-hidden="true">OPEN →</b>
+                  </button>
                   <button className="case-file" onClick={() => openCase("broken-telescope")}>
                     <span className="paper-file" aria-hidden="true">BKT</span>
                     <span><strong>The Broken Telescope</strong><small>Case SID-1947-0003 · English · {telescopeTabs.length - 1} Documents</small></span>
@@ -692,9 +709,14 @@ export default function Home() {
             {emailOpen && (
               <section className="email-window" role="dialog" aria-modal="true" aria-label="Email">
                 <header className="window-titlebar"><span><EmailIcon />E-MAIL</span><button onClick={() => { sfxClose(); setEmailOpen(false); setActiveEmail(null); }} aria-label="Close email">×</button></header>
-                <div className="window-toolbar"><span>INBOX</span><span>3 MESSAGES</span></div>
+                <div className="window-toolbar"><span>INBOX</span><span>4 MESSAGES</span></div>
                 {activeEmail === null ? (
                   <div className="email-inbox">
+                    <button className={`email-row${readEmails.has(3) ? " read" : ""}`} onClick={() => { setActiveEmail(3); setReadEmails((prev) => new Set(prev).add(3)); }}>
+                      <span className="email-row-from">Chief Nymos</span>
+                      <span className="email-row-subject">New case — Theft at the Opera</span>
+                      <span className="email-row-date">Jul 10</span>
+                    </button>
                     <button className={`email-row${readEmails.has(2) ? " read" : ""}`} onClick={() => { setActiveEmail(2); setReadEmails((prev) => new Set(prev).add(2)); }}>
                       <span className="email-row-from">Chief Nymos</span>
                       <span className="email-row-subject">New case — The Broken Telescope</span>
@@ -753,7 +775,7 @@ export default function Home() {
                       </div>
                     </div>
                   </div>
-                ) : (
+                ) : activeEmail === 2 ? (
                   <div className="email-body">
                     <button className="email-back" onClick={() => setActiveEmail(null)}>← INBOX</button>
                     <div className="email-header">
@@ -774,6 +796,24 @@ export default function Home() {
                         <div className="email-attachment-label">📎 ATTACHMENT: Royal_Neuheim_Observatory.png</div>
                         <img src="./email/chief-case3.png" alt="The Royal Neuheim Observatory on a hilltop during a thunderstorm" />
                       </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="email-body">
+                    <button className="email-back" onClick={() => setActiveEmail(null)}>← INBOX</button>
+                    <div className="email-header">
+                      <div className="email-field"><span className="email-label">FROM:</span><span>Chief Nymos &lt;nemo@rpd.neuheim.gov&gt;</span></div>
+                      <div className="email-field"><span className="email-label">TO:</span><span>Det. &quot;Bones&quot; Malone &lt;bones@rpd.neuheim.gov&gt;</span></div>
+                      <div className="email-field"><span className="email-label">DATE:</span><span>July 10, 2026 — 09:15 AM JST</span></div>
+                      <div className="email-field"><span className="email-label">SUBJECT:</span><span className="email-subject">New case — Theft at the Opera</span></div>
+                    </div>
+                    <div className="email-content">
+                      <p>Bones,</p>
+                      <p>Strange thing. A lot of people, when they look at me, assume that I can barely read, never mind that I appreciate classical music. And I do. The opera is a weakness of mine, it always has been. You can imagine my chagrin when people come up to me and are swiftly stunned by my knowledge of the classics.</p>
+                      <p>I&apos;m sure you&apos;ve already figured out why I&apos;m sending this to you.</p>
+                      <p>That&apos;s right. Someone has &quot;liberated&quot; a number of world-class instruments from the Opera House. The police have arrested Theodor Voss, the second violinist, but I&apos;ve followed Voss&apos;s career. He&apos;s nineteen and a prodigy. I can&apos;t, don&apos;t want to, believe that he&apos;d ruin his own future just to steal the first violin&apos;s chair.</p>
+                      <p>Look into it. For me and for the music.</p>
+                      <p>— The Chief</p>
                     </div>
                   </div>
                 )}
@@ -802,7 +842,7 @@ export default function Home() {
           <div className="case-reader">
             <header className="case-reader-titlebar"><span><FolderIcon small />CASE FILES</span><button onClick={() => { sfxClose(); setCaseOpen(false); }} aria-label="Close case files">×</button></header>
             <aside className="case-sidebar">
-              <div className="case-id-block"><span>{germanCase ? "AKTIVER FALL" : "ACTIVE CASE"}</span><strong>{selectedCase === "magyarosaurus" ? "MDC" : selectedCase === "broken-telescope" ? "BKT" : "TTS"}</strong><p>{selectedCase === "magyarosaurus" ? (language === "de" ? "Der verschwundene Magyarosaurus" : "The Missing Magyarosaurus") : selectedCase === "broken-telescope" ? "The Broken Telescope" : "Der Brand in Timmy Two-Shoes' Restaurant"}</p></div>
+              <div className="case-id-block"><span>{germanCase ? "AKTIVER FALL" : "ACTIVE CASE"}</span><strong>{selectedCase === "magyarosaurus" ? "MDC" : selectedCase === "broken-telescope" ? "BKT" : selectedCase === "theft-at-the-opera" ? "OPR" : "TTS"}</strong><p>{selectedCase === "magyarosaurus" ? (language === "de" ? "Der verschwundene Magyarosaurus" : "The Missing Magyarosaurus") : selectedCase === "broken-telescope" ? "The Broken Telescope" : selectedCase === "theft-at-the-opera" ? "Theft at the Opera" : "Der Brand in Timmy Two-Shoes' Restaurant"}</p></div>
               <nav aria-label="Case documents">
                 {currentTabs.map((tab) => (
                   <button key={tab.key} className={activeTab === tab.key ? "active" : ""} onClick={() => openTab(tab.key)}>
@@ -826,6 +866,8 @@ export default function Home() {
                 {activeTab.startsWith("magyar_") && <MagyarReportTab reportKey={activeTab} lang={language} difficulty={difficulty} />}
                 {activeTab.startsWith("telescope_") && activeTab !== "telescope_task" && <TelescopeReportTab reportKey={activeTab} difficulty={difficulty} />}
                 {activeTab === "telescope_task" && <TelescopeTaskTab onSubmit={() => setSubmitOpen(true)} difficulty={difficulty} />}
+                {activeTab.startsWith("opera_") && activeTab !== "opera_task" && <OperaReportTab reportKey={activeTab} difficulty={difficulty} />}
+                {activeTab === "opera_task" && <OperaTaskTab onSubmit={() => setSubmitOpen(true)} difficulty={difficulty} />}
               </div>
             </section>
           </div>

@@ -42,6 +42,11 @@ export const caseSuspects: Record<ReportCaseId, SuspectDefinition[]> = {
     { id: "brenner", name: "Dr. Lukas Brenner", role: "Binary star researcher — falling behind, often at observatory" },
     { id: "zeller", name: "Dr. Katrin Zeller", role: "Lunar researcher — uses computer only, not the telescope" },
   ],
+  "theft-at-the-opera": [
+    { id: "voss", name: "Theodor Voss", role: "Second Violin — arrested, propped door open, promoted to First Chair" },
+    { id: "fan", name: "Richter's Fan(s)", role: "Obsessive admirers — knew the building, tracked Richter's schedule" },
+    { id: "thieves", name: "Unknown Thieves", role: "Stole 14 instruments from locked storage — professional operation" },
+  ],
 };
 
 export function createEmptySuspects(caseId: ReportCaseId): CaseSuspects {
