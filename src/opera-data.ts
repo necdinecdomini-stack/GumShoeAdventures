@@ -24,8 +24,7 @@ export type OperaReport = {
     | "opera_dressler"
     | "opera_voll"
     | "opera_holtz"
-    | "opera_layout"
-    | "opera_intelligence";
+    | "opera_layout";
   code: string;
   label: string;
   agency: string;
@@ -50,9 +49,9 @@ export const operaReports: OperaReport[] = [
       {
         paragraphs: [
           "Bones,",
-          "Strange thing. A lot of people, when they look at me, assume that I can barely read, never mind that I appreciate classical music. And I do. The opera is a weakness of mine, it always has been. You can imagine my chagrin when people come up to me and are swiftly stunned by my knowledge of the classics.",
-          "I'm sure you've already figured out why I'm sending this to you.",
-          "That's right. Someone has \"liberated\" a number of world-class instruments from the Opera House. The police have arrested Theodor Voss, the second violinist, but I've followed Voss's career. He's nineteen and a prodigy. I can't, don't want to, believe that he'd ruin his own future just to steal the first violin's chair.",
+          "You know how it is. When people look at me they assume that I can barely read, never mind that I appreciate classical music. But I do. The opera is a weakness of mine. Always has been. You can imagine my chagrin when people come up to me to lecture me about classics I've read in their original languages.",
+          "Plebs the lot of them.",
+          "To the point: Someone has \"liberated\" a number of world-class instruments from the Opera House. The police have arrested Theodor Voss, the second violinist, but I've followed Voss's career. He's nineteen and a prodigy. I can't, don't want to, believe that he'd ruin his own future just to steal the first violin's chair. I especially don't want our best musicians to flee the city for fear of having their instruments stolen. I WILL NOT permit Neuheim to go the way of Altdorf and Freihafen.",
           "Look into it. For me and for the music.",
           "— The Chief",
         ],
@@ -77,8 +76,8 @@ export const operaReports: OperaReport[] = [
         heading: "Summary of Events",
         paragraphs: [
           "On the day in question, the Neuheim Philharmonic held a rehearsal at the State Opera House in preparation for the opening night of the concert season. First Violin Elias Richter left his instrument, a rare antique violin valued at approximately 45,000 marks, in the backstage staging area when he departed the building after rehearsal. The following morning, Richter returned and reported the violin missing.",
-          "A subsequent search of the building revealed that fourteen additional instruments had been removed from the opera house's main storage room overnight. The combined estimated value of these instruments exceeds 160,000 marks.",
-          "In the days following the thefts, several first-string performers withdrew from the season's opening concert, citing concerns about security. Their positions were filled by second-string players.",
+          "A subsequent search of the building revealed that fourteen additional instruments had been removed from the opera house's main storage room overnight. The combined estimated value of these instruments exceeds 350,000 marks.",
+          "In the day following the thefts, several first-string performers withdrew from the season's opening concert, citing concerns about security. Their positions were filled by second-string players.",
         ],
       },
       {
@@ -271,7 +270,7 @@ export const operaReports: OperaReport[] = [
         paragraphs: [
           "Description: Various orchestral instruments (see attached schedule for individual descriptions and valuations)",
           "Owner: Neuheim State Opera (institutional collection)",
-          "Combined estimated value: 162,000 marks",
+          "Combined estimated value: 362,000 marks",
           "Last confirmed present: Verified as part of standard inventory prior to building closure on rehearsal day evening",
           "Reported missing: 8:35 AM, following morning (discovered during search prompted by the violin's disappearance)",
           "Location when last seen: Main instrument storage room, backstage",
@@ -282,7 +281,7 @@ export const operaReports: OperaReport[] = [
         heading: "Summary",
         paragraphs: [
           "Total items reported stolen: 15",
-          "Total estimated value: 207,000 marks",
+          "Total estimated value: 407,000 marks",
         ],
       },
       {
@@ -290,7 +289,7 @@ export const operaReports: OperaReport[] = [
         paragraphs: [
           "The circumstances surrounding Item 1 differ from those surrounding Items 2 through 15. Item 1 was left in an open, unsecured staging area accessible to anyone with backstage access. Items 2 through 15 were removed from a locked storage room, requiring either a key or the skill to defeat the lock without leaving visible damage.",
           "Item 1 is a single personal instrument of exceptional sentimental value to the owner. Items 2 through 15 are institutional property removed in bulk, representing a quite different kind of operation.",
-          "For the purposes of claims processing, I recommend treating these as separate incidents. The methods, targets, and profiles do not suggest a single coordinated theft. Mr. Richter's instrument is insured under his personal policy and is not covered by the opera house's institutional plan.",
+          "For the purposes of claims processing, I recommend treating these as separate incidents. Mr. Richter's instrument is insured under his personal policy and is not covered by the opera house's institutional plan.",
           "— Gerhard Leitner, Senior Claims Investigator",
         ],
       },
@@ -412,7 +411,7 @@ const operaSuspectsB: OperaReport[] = [
       {
         paragraphs: [
           "I was in the balcony during rehearsal, same as I often am. I've been attending Elias Richter's performances and rehearsals for years. I know his repertoire better than most of the orchestra does. I'm one of his most dedicated followers, and I don't apologize for that. Some people collect stamps. I collect musical experiences.",
-          "Yes, I entered the sweepstakes. And no, I didn't win. I was disappointed, and I wrote to Richter about it, more than once. I don't see anything wrong with that. They closed entries early, which I thought was handled poorly. A lot of people felt the same way. But being disappointed about a contest doesn't make a person a thief.",
+          "Yes, I entered the sweepstakes. And no, I didn't win. I was disappointed, and I wrote to Richter about it. I don't see anything wrong with that. They closed entries early, which I thought was handled poorly. A lot of people felt the same way. But being disappointed about a contest doesn't make a person a thief.",
           "When rehearsal finished, I made my way downstairs and left the building. I walked to Café Eichhorn on Lindenstrasse. It's just around the corner from the opera house, a few minutes on foot. I got there around five o'clock, had a coffee, read the evening edition of the Neuheimer Tagblatt, and sat for about an hour. It was a quiet afternoon. I don't think anyone I know was there, but I'm a regular; the staff would recognize me. I went home after that and was in for the night by half past six.",
           "I didn't take anything. I didn't see anything unusual. And I resent being questioned as a suspect simply because I happen to care deeply about Richter's music. There's nothing criminal about admiration.",
           "— Werner Holtz",
@@ -473,52 +472,6 @@ const operaDocsC: OperaReport[] = [
     ],
     stamp: "THEFT AT THE OPERA / REPORT 13",
   },
-  {
-    key: "opera_intelligence",
-    code: "14",
-    label: "Criminal Intelligence Brief",
-    agency: "Neuheim Police Department — Criminal Intelligence Division",
-    title: "Criminal Intelligence Brief",
-    meta: [
-      "Prepared by: Inspector Katrin Engel, Criminal Intelligence Division",
-      "Subject: Pattern analysis of instrument thefts at cultural institutions",
-      "Classification: Restricted distribution, investigative use only",
-    ],
-    sections: [
-      {
-        heading: "Background",
-        paragraphs: [
-          "At the request of the Special Investigations Division, I have reviewed the Neuheim State Opera theft (Case NPD-4471) against our existing intelligence on organized property theft in the region.",
-        ],
-      },
-      {
-        heading: "Pattern of Similar Incidents",
-        paragraphs: [
-          "Over the past three years, our division has documented four incidents at cultural institutions in Neuheim and neighboring cities that share a consistent method of operation:",
-          "The Neuheim Conservatory lost eleven instruments from a locked rehearsal room. No sign of forced entry. The theft occurred overnight. None of the instruments have been recovered.",
-          "The Brückenstadt Municipal Theatre reported eight orchestral instruments missing from a secured basement storage area. The lock was intact. The theft was discovered on a Monday morning; the building had been closed over the weekend.",
-          "The Oberfeld Academy of Music lost six instruments from a locked display case in their main hall. The case's lock was opened without damage. The theft occurred during a public event, while the building was occupied.",
-          "The Schöntal Civic Opera reported the disappearance of twelve instruments from a backstage storage room. No forced entry. Overnight theft. A loading door at the rear of the building was found unlocked the following morning, though staff insist it was secured.",
-          "In each case, the perpetrators targeted institutional collections rather than individual performers' instruments. In each case, the entry point was a locked door or case that was opened without visible damage. In no case have the instruments been recovered.",
-        ],
-      },
-      {
-        heading: "Known Fencing Route",
-        paragraphs: [
-          "Our intelligence indicates that stolen instruments and cultural artifacts from this region are moved through the Commercial Harbour in Neuheim. The harbour handles enough legitimate cargo traffic that individual crates do not attract scrutiny, and several vessels operating regular routes to ports outside the country have been flagged as suspected carriers.",
-          "We have not yet identified the individuals responsible for the thefts described above. We believe they are the work of a single organized group with expertise in defeating institutional locks and with an established channel for moving stolen goods out of the city by water.",
-        ],
-      },
-      {
-        heading: "Harbour Activity",
-        paragraphs: [
-          "At my request, the Harbour Master's office reviewed their records for the night in question. A cargo vessel registered to a Karelian shipping company departed from the Commercial Harbour at approximately 4:00 AM, several hours after the opera house was closed for the night. The vessel's cargo manifest lists \"miscellaneous cultural goods\" as part of its load. This vessel operates a regular route and has been flagged in previous intelligence reports.",
-          "— Inspector Katrin Engel, Criminal Intelligence Division",
-        ],
-      },
-    ],
-    stamp: "THEFT AT THE OPERA / REPORT 14",
-  },
 ];
 
 export const operaReportsGumshoe: OperaReport[] = operaReports;
@@ -553,10 +506,9 @@ export const operaQuestionsLeadInvestigator: string[] = [
   "Werner Holtz says he \"made my way downstairs and left the building.\" He does not say which staircase he used or which exit he took. Combined with Emil's observation, what does this suggest about Werner's route?",
   "Using the building layout report (Document 13), describe the route from the upper balcony to the backstage staging area without using the grand staircase. How long does this route take?",
   "Rehearsal ended at 4:45 PM. Werner Holtz says he arrived at Café Eichhorn \"around five o'clock.\" The café is a two-minute walk from the opera house. Account for the missing time. Construct a minute-by-minute timeline of Werner's likely movements.",
-  "Read the criminal intelligence brief (Document 14). How many similar thefts have occurred in the region? What do they all have in common with the opera house storage room theft?",
-  "The intelligence brief mentions a cargo vessel that departed the Commercial Harbour at 4:00 AM. Why is this detail significant to the storage room theft?",
+  "In the Chief's email, he writes: \"I WILL NOT permit Neuheim to go the way of Altdorf and Freihafen.\" What is the Chief implying about what happened in those cities? How does this change your understanding of the storage room theft?",
   "Contrast the violin theft and the storage room theft. For each one, describe the method, the target, the likely motive, and the type of person who committed it. Explain why these must be two separate crimes by two different actors.",
-  "Write your verdict in 150–200 words. Construct two arguments: (1) Prove that Werner Holtz stole Richter's violin, using the building layout and time-distance evidence. (2) Prove that the storage room theft was carried out by an organized criminal group. Explain why the police theory of a single conspiracy is wrong. Reference evidence from at least five documents.",
+  "Write your verdict in 150–200 words. Construct two arguments: (1) Prove that Werner Holtz stole Richter's violin, using the building layout and time-distance evidence. (2) Explain what the Chief's reference to Altdorf and Freihafen tells us about the storage room theft and why the police theory of a single conspiracy is wrong. Reference evidence from at least five documents.",
 ];
 
 export const operaReportsByDifficulty: Record<Difficulty, OperaReport[]> = {
