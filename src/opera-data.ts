@@ -12,7 +12,6 @@ export type OperaSection = {
 
 export type OperaReport = {
   key:
-    | "opera_case_brief"
     | "opera_arrest_report"
     | "opera_security_report"
     | "opera_richter_statement"
@@ -35,30 +34,6 @@ export type OperaReport = {
 };
 
 export const operaReports: OperaReport[] = [
-  {
-    key: "opera_case_brief",
-    code: "01",
-    label: "S.I.D. Case Brief",
-    agency: "Special Investigations Division",
-    title: "S.I.D. Case Brief",
-    meta: [
-      "From: The Chief",
-      "To: Agent Bones, Special Investigations Division",
-    ],
-    sections: [
-      {
-        paragraphs: [
-          "Bones,",
-          "You know how it is. When people look at me they assume that I can barely read, never mind that I appreciate classical music. But I do. The opera is a weakness of mine. Always has been. You can imagine my chagrin when people come up to me to lecture me about classics I've read in their original languages.",
-          "Plebs the lot of them.",
-          "To the point: Someone has \"liberated\" a number of world-class instruments from the Opera House. The police have arrested Theodor Voss, the second violinist, but I've followed Voss's career. He's nineteen and a prodigy. I can't, don't want to, believe that he'd ruin his own future just to steal the first violin's chair. I especially don't want our best musicians to flee the city for fear of having their instruments stolen. I WILL NOT permit Neuheim to go the way of Altdorf and Freihafen.",
-          "Look into it. For me and for the music.",
-          "— The Chief",
-        ],
-      },
-    ],
-    stamp: "THEFT AT THE OPERA / REPORT 01",
-  },
   {
     key: "opera_arrest_report",
     code: "02",
@@ -506,9 +481,9 @@ export const operaQuestionsLeadInvestigator: string[] = [
   "Werner Holtz says he \"made my way downstairs and left the building.\" He does not say which staircase he used or which exit he took. Combined with Emil's observation, what does this suggest about Werner's route?",
   "Using the building layout report (Document 13), describe the route from the upper balcony to the backstage staging area without using the grand staircase. How long does this route take?",
   "Rehearsal ended at 4:45 PM. Werner Holtz says he arrived at Café Eichhorn \"around five o'clock.\" The café is a two-minute walk from the opera house. Account for the missing time. Construct a minute-by-minute timeline of Werner's likely movements.",
-  "In the S.I.D. Case Brief (Document 1), the Chief writes: \"I WILL NOT permit Neuheim to go the way of Altdorf and Freihafen.\" What is the Chief implying about what happened in those cities? How does this change your understanding of the storage room theft?",
+  "In the Chief's email, he writes: \"I WILL NOT permit Neuheim to go the way of Altdorf and Freihafen.\" What is the Chief implying about what happened in those cities? How does this change your understanding of the storage room theft?",
   "Contrast the violin theft and the storage room theft. For each one, describe the method, the target, the likely motive, and the type of person who committed it. Explain why these must be two separate crimes by two different actors.",
-  "Write your verdict in 150–200 words. Construct two arguments: (1) Prove that Werner Holtz stole Richter's violin, using the building layout and time-distance evidence. (2) Explain what the S.I.D. Case Brief's reference to Altdorf and Freihafen tells us about the storage room theft and why the police theory of a single conspiracy is wrong. Reference evidence from at least five documents.",
+  "Write your verdict in 150–200 words. Construct two arguments: (1) Prove that Werner Holtz stole Richter's violin, using the building layout and time-distance evidence. (2) Explain what the Chief's reference to Altdorf and Freihafen tells us about the storage room theft and why the police theory of a single conspiracy is wrong. Reference evidence from at least five documents.",
 ];
 
 export const operaReportsByDifficulty: Record<Difficulty, OperaReport[]> = {

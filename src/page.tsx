@@ -27,7 +27,7 @@ const firstTabForCase: Record<CaseId, TabKey> = {
   "timmy-two-shoes": "timmy_police",
   "magyarosaurus": "magyar_police",
   "broken-telescope": "telescope_briefing",
-  "theft-at-the-opera": "opera_case_brief",
+  "theft-at-the-opera": "opera_arrest_report",
 };
 
 const difficultyLabels: Record<Difficulty, { en: string; de: string }> = {
@@ -811,9 +811,9 @@ export default function Home() {
                     </div>
                     <div className="email-content">
                       <p>Bones,</p>
-                      <p>Strange thing. A lot of people, when they look at me, assume that I can barely read, never mind that I appreciate classical music. And I do. The opera is a weakness of mine, it always has been. You can imagine my chagrin when people come up to me and are swiftly stunned by my knowledge of the classics.</p>
-                      <p>I&apos;m sure you&apos;ve already figured out why I&apos;m sending this to you.</p>
-                      <p>That&apos;s right. Someone has &quot;liberated&quot; a number of world-class instruments from the Opera House. The police have arrested Theodor Voss, the second violinist, but I&apos;ve followed Voss&apos;s career. He&apos;s nineteen and a prodigy. I can&apos;t, don&apos;t want to, believe that he&apos;d ruin his own future just to steal the first violin&apos;s chair.</p>
+                      <p>You know how it is. When people look at me they assume that I can barely read, never mind that I appreciate classical music. But I do. The opera is a weakness of mine. Always has been. You can imagine my chagrin when people come up to me to lecture me about classics I&apos;ve read in their original languages.</p>
+                      <p>Plebs the lot of them.</p>
+                      <p>To the point: Someone has &quot;liberated&quot; a number of world-class instruments from the Opera House. The police have arrested Theodor Voss, the second violinist, but I&apos;ve followed Voss&apos;s career. He&apos;s nineteen and a prodigy. I can&apos;t, don&apos;t want to, believe that he&apos;d ruin his own future just to steal the first violin&apos;s chair. I especially don&apos;t want our best musicians to flee the city for fear of having their instruments stolen. I WILL NOT permit Neuheim to go the way of Altdorf and Freihafen.</p>
                       <p>Look into it. For me and for the music.</p>
                       <p>— The Chief</p>
                       <div className="email-attachment">
